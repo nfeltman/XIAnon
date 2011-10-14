@@ -1,38 +1,65 @@
 \documentclass{article}
+\usepackage[pdftex]{graphicx}
 \usepackage{amsmath}
+
+
 \begin{document}
+
 \section{Hello, David}
 My goal for this document is for it to contain most of our thoughts and sort of iteratively converge to a good final document.
-\section{Goals of Anonymity}
+
+\section{Levels of Anonymity}
 There are three main properties that a anonymization system might want to satisfy.
 
 NOTES: Lets cross-check this against the literature.
-\subsection{Provider Anonymity}
+\subsection{Receiver Anonymity}
 The server cannot determine the identity of the client.
-\subsection{Encrypted to Proxy}
+\subsection{Sender Anonymity}
+Clients cannot determine who is providing they content they download.
+\subsection{Sender-Receiver Unlinkability}
+An adversary with some level of knowledge of the whole system cannot determine who is communicating with whom.
+\subsection{Data Privacy}
 Any proxies invovled have no way of figuring out the data.  This will of course require that the client get some sort of public key for the server.
 \subsection{Server Unawares}
 The server is unaware that it is being commuicated with via a proxy.
-\subsection{Unlinkable}
-An adversary with some level of knowledge of the whole system cannot determine who is comunicating with whom.
 \section{Scenarios}
 In this section, we present scenarios that would warrant the properties above.
 \subsection{End-to-End Connection}
 Two people know each other's addresses and need to stay unlinkable.
 \subsection{Unsecure chat room.}
 You want to connect to a Free Opressistan Forum.  You probably don't want your password visible, and you don't want to be linkable to the site either.
-\section{Designing a proxy system for XIA}
-In this section we present several ways of organizing a proxy service.
+
+\section{General Approaches}
+\subsection{Proxy}
+Simply route your traffic through a proxy.
+\subsection{Onion Routing and MIXes}
+We can do some things to make the proxy approach better.
+\subsection{Broadcast}
+Just send your packet to everyone and no one will know who the intended recipient was.
+
+\section{XIA}
+Some features of XIA have implications when it comes to anonymity.
+\subsection{Intrinsic Security}
+\subsection{The Content Principle}
+
+\section{Adapting Existing Methods for XIA}
+In this section we discuss how existing approaches work in XIA.
 \subsection{AD-Provided Proxy}
 AD routes based on SID, which we trust them not to link to us.
-\subsection{Multi-Route Proxy Service}
-Your requests all take different routes.
 \subsection{Bound-Route Proxy Service}
 Your requests all take the same route.
 \subsection{Altruistic Onion Routing}
 How should Tor work in an XIA setting?
-\section{The trouble with SIDs}
-In this section we talk about the "I'll only encrypt with the adressee public key" pitfall.
+
+\section{New Approaches Made Possible by XIA}
+\subsection{Multi-Route Proxy Service}
+Your requests all take different routes.
+
+\section{Challenges Posed by XIA}
+While XIA provides new mechanisms we can harness for anonymization, some features of the new architecture also introduce challenges to providing anonymity.
+\subsection{The trouble with SIDs}
+In this section we talk about the "I'll only encrypt with the addressee public key" pitfall.
+
 \section{PDRSA}
 Fuck this section.
 \subsection{Algorithm}
