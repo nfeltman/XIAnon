@@ -2,11 +2,11 @@
 \usepackage[pdftex]{graphicx}
 \usepackage{amsmath}
 
-
 \begin{document}
 
 \section{Hello, David}
 My goal for this document is for it to contain most of our thoughts and sort of iteratively converge to a good final document.
+
 
 \section{Levels of Anonymity}
 There are three main properties that a anonymization system might want to satisfy.
@@ -29,6 +29,7 @@ Two people know each other's addresses and need to stay unlinkable.
 \subsection{Unsecure chat room.}
 You want to connect to a Free Opressistan Forum.  You probably don't want your password visible, and you don't want to be linkable to the site either.
 
+
 \section{General Approaches}
 \subsection{Proxy}
 Simply route your traffic through a proxy.
@@ -37,10 +38,19 @@ We can do some things to make the proxy approach better.
 \subsection{Broadcast}
 Just send your packet to everyone and no one will know who the intended recipient was.
 
+
 \section{XIA}
-Some features of XIA have implications when it comes to anonymity.
+\label{sec:xia-overview}
+Some features of XIA have implications when it comes to anonymity. We briefly describe the key ideas here and discuss their impact on anonymous communication later.
+\subsection{Principal-Based Communication}
+In contrast with today's host-based Internet, XIA provides a framework for communication among \emph{principals}. The idea of principal-based communication is that users should be able to address packets directly to their final \emph{intent}. For example, a user searching for books on Amazon wishes to communicate with \texttt{www.amazon.com}; he doesn't care which particular Amazon server responds to his request.
+
+In this example, \texttt{www.amazon.com} can be viewed as a \emph{service} principal. In the case where communication with a particular machine truly is the intent, traditional host-based communication can still be achieved via the \emph{host} principal. Other principals include static \emph{content} (e.g. images) and \emph{autonomous domains} (similar to today's autonomous systems).
 \subsection{Intrinsic Security}
-\subsection{The Content Principle}
+All addresses (or, better put, identifiers) in XIA are \emph{intrinsically secure}; exactly what this means varies among principals. For example, a content identifier (CID) is the cryptographic hash of the content itself, enabling anyone receiving the content to verify its integrity. Hosts and services are required to have a public/private key pair; therefore their corresponding identifiers (HIDs and SIDs) are simply the hashes of public keys. A host can sign any communication it generates with its private key and anyone can publicly verify the signature using the host's ID.
+
+The use of identifiers which are cryptographically derived from a user's public key naturally has implications concerning anonymity (or lack thereof) which we discuss further in \S\ref{sec:xia-challenges}.
+
 
 \section{Adapting Existing Methods for XIA}
 In this section we discuss how existing approaches work in XIA.
@@ -51,14 +61,29 @@ Your requests all take the same route.
 \subsection{Altruistic Onion Routing}
 How should Tor work in an XIA setting?
 
+
 \section{New Approaches Made Possible by XIA}
 \subsection{Multi-Route Proxy Service}
-Your requests all take different routes.
+In \S\ref{sec:xia-overview} we introduced the service principal. We gave the example of a user communicating with \texttt{www.amazon.com}; in this case, his true intent is to send requests to the Amazon service, not to a particular Amazon server. He addresses his requests to \texttt{www.amazon.com}'s SID and lets the network pick a particular server.
+
+Now consider a similar situation in which a user routes to-be-anonymized packets through a proxy \emph{service} rather than a particular proxy server. Each packet is addressed to SID$_{proxy}$ and is routed by the network to various hosts providing the service (Figure~\ref{fig:proxy-service}). Even if only one proxy server is used per packet, simply by using the the service principle our anonymous user has made it harder for network traffic analysis to discover his use of a proxy.
+\begin{figure}
+\includegraphics{images/proxy_service_multip_path.png}
+\caption{The client routes all requests to SID$_{proxy}$. The network selects a server implementing SID$_{proxy}$ for each packet.}
+\label{fig:proxy-service}
+\end{figure}
+
+\subsection{The Content Principal}
+Something about publishing anonymously?
 
 \section{Challenges Posed by XIA}
+\label{sec:xia-challenges}
 While XIA provides new mechanisms we can harness for anonymization, some features of the new architecture also introduce challenges to providing anonymity.
+\subsection{XIDs are inherently non-anonymous}
+
 \subsection{The trouble with SIDs}
 In this section we talk about the "I'll only encrypt with the addressee public key" pitfall.
+
 
 \section{PDRSA}
 Fuck this section.
