@@ -21,16 +21,16 @@ The server is unaware that it is being commuicated with via a proxy.
 \section{Scenarios}
 In this section, we present scenarios that would warrant the properties above.
 \subsection{End-to-End Connection}
-Consider the case where there are two clients within a largely adversarial system that each know the others' address and public key, but who wish to exchange messages without their communication being detected.  That is, they recquire sener-reciever unlinkability in both directions.  We will assume that the ADs surrounding each client are definitely untrustworthy.
-\subsection{Unsecure chat room.}
-You want to connect to a Free Opressistan Forum.  You probably don't want your password visible, and you don't want to be linkable to the site either.
+Consider the case where there are two clients within a largely adversarial system that each know the others' address and public key, but who wish to exchange messages without their communication being detected.  That is, they recquire sender-reciever unlinkability.  We will assume that the ADs surrounding each client are definitely untrustworthy.
+\subsection{Unsecure Chat Room}
+Consider the case of a dissident blogger in a hostile nation wanting to connect to a blogging service.  Obviously, they don't want their password to be visible to the proxy service, nor do they want the proxy service to be able to interfere with the communication.  More importantly, they also want to be anonymous to the service and their communication to be unlinkable to their AD.
 
 
 \section{General Approaches}
 \subsection{Proxy}
-The simplest form of requester anonymity is given by a single proxy.  The idea is simple: a trusted third-party will act as a proxy for an entity, forwarding its requests and rerouting the responses, thereby shielding the identity of that entity to the outside, as well as hiding the provider's identity to the requester's AD (assuming it is not also the proxy's AD).  This can be overcome by an adversary with global information by discovering the communications of a proxy and associating that with communications between the proxy and other entities.  This also recquires that the proxy have some sort of incentive.  In the current internet, this incentive is provided sometimes by monetary exchange, and sometimes by the opportunity to intercept the communication and insert advertisements.
+The simplest form of requester anonymity is given by a single proxy.  The idea is simple: a trusted third-party will act as a proxy for an entity, forwarding its requests and rerouting the responses, thereby shielding the identity of that entity to the outside, as well as hiding the provider's identity to the requester's AD (assuming it is not also the proxy's AD).  This can be overcome by an adversary with global information by discovering the communications of a proxy and associating that with communications between the proxy and other entities.  This also recquires that the proxy have some sort of incentive to participate.  In the current internet, this incentive is provided sometimes by monetary exchange, and sometimes by the opportunity to intercept the communication and insert advertisements.  If the proxy is compromised, then a single proxy provides no anonymity.
 \subsection{Onion Routing and MIXes}
-We can do some things to make the proxy approach better.
+The main idea behind onion routing is to apply the proxy concept several times.  Messages are routed through a series of proxies, thereby making the linking problem much more difficult.  Importantly, even if one or several points in the route are compromised, the total anonymity is not.
 \subsection{Broadcast}
 Just send your packet to everyone and no one will know who the intended recipient was.  This is in some ways sufficient for reciever anonymity.  
 
