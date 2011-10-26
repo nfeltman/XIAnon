@@ -1,0 +1,16 @@
+For Friday:
+
+- Update proposal (I've done some -- take a look)
+- Summarize progress & give action plan (part of updated proposal document, not filed in yet)
+- Write introduction + definition/levels of anonymity
+- Write Approach: Proxies
+- Write Approach: Temp. SIDs
+- Write draft of XAnonSocket API interface
+
+
+Eventually
+
+- More approaches?
+- Implement XAnonSocket API
+- Modify web proxy to use XAnonSocket API
+- Create a GUI to adjust how the proxy uses the XAnonSocket API

@@ -1,0 +1,46 @@
+\documentclass[11pt]{article}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{cite}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\title{15-744 Project Proposal}
+\author{Nicolas Feltman and David Naylor}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Problem Statement}
+The desire for anonymous communication in the Internet has made it a much-studied issue. Several standard approaches to anonymity have emerged, normally involving some number of explicitly identified proxies  due to the dumb nature of current routers. Although none of these methods are perfect, they generally meet most users' needs. Little work has been done, however, exploring ways to make these methods easily utilized by application developers and easily understood by end users.
+
+%This is rough and needs expanding...
+We propose to consider anonymity in the context of the eXpressive Internet Architecture (XIA) \cite{xia}, a future Internet architecture under development at CMU. We believe that new features in XIA will provide application developers with an easy and consistent way to use existing methods for anonymous communication.
+
+
+\section{Related Work}
+Existing work related to anonymity can be roughly categorized as either discussion of what it means to communicate anonymously or techniques for doing so.
+
+\subsection{Types of Anonymity}
+The term ``anonymity" alone is somewhat vague.  When implementing anonymous methods, one must consider three questions: 1)~Who wants to remain anonymous? 2)~From whom? 3)~To what degree? In response to (1), Pfitzmann and Waidner \cite{PW87} consider three scenarios: \emph{sender anonymity}, \emph{recipient anonymity}, and \emph{sender-recipient unlinkability}. As for (2), one typically anticipates either an attacker with limited knowledge (a single host or a small number of colluding hosts) or one with global knowledge (achieved through a large number of colluding hosts). And regarding (3), Reiter and Rubin \cite{RR98} propose three classifications: \emph{beyond suspicion}, \emph{probable innocence}, and \emph{possible innocence}.
+
+\subsection{Techniques}
+Most existing techniques involve routing traffic through a proxy of some kind. In its simplest form, this amounts to forwarding your packet (an HTTP request, perhaps) to the proxy which will in turn forward to its actual destination. There are many ways to improve on this basic idea; in \emph{onion routing}, packets are forwarded through multiple proxies with the use of cryptography to hide all but the next hop address at each step, and \emph{MIXes} \cite{Chaum81} require the proxy to wait until it has received packets to forward from several users, after which it forwards them on in a different order.
+
+Other techniques include using broadcasts or multicasts to hide the intended recipient or return address spoofing to protect the sender.
+
+
+\section{Status Report}
+
+
+\section{Action Plan}
+
+
+
+
+\end{document}  
