@@ -31,7 +31,30 @@
 
 
 \section{An API for Developers}
+As we have discussed above, XIA allows for simple, if not elegant, ways to employ techniques for anonymization. For instance, we explored how an application can achieve fine-grain control over the use of a proxy service through DAG manipulation. We also proposed the use of temporary SIDs as pseudonyms.
+
+Both of these strategies incorporate anonymity by leveraging core features of XIA. Thus, it is both possible and useful to a standard set of tools implementing these techniques to application developers --- it would be silly for each developer to implement his/her own functions for adding a proxy service to all outgoing DAGs, for example.
+
+We have implemented these tools in the form of the XAnonSocket API, an extension to the XSocket API. (The XSocket API, as the name suggests, allows developers to communicate with sockets over XIA, much like network applications today use TCP or UDP sockets.) The XAnonSocket API allows developers to specify how they want to achieve anonymity (i.e., by routing traffic through a proxy of their choice) just once, after which they can send packets using the specified service with no extra effort. In \S~\ref{sec:api-interface} we present the interface of the XAnonSocket API.
+
+\subsection{API Interface}
+\label{sec:api-interface}
+
+\begin{center}
+	\begin{tabular}{l p{7cm}}
+	\textbf{Function} 	&	\textbf{Description}\\
+	\hline
+	\texttt{XAnonSocket()} & Creates an anonymous XIA socket\\
+	\texttt{XAnonRegisterAnonymizer(sock, dag)} & Specifies the DAG of an anonymization (e.g., proxy) service all packets sent through \texttt{sock} should be routed through\\
+	\texttt{XAnonUseTempSID(sock, duration)} & Future packets should be sent from a temporary SID with HID elided. A new SID is generated after \texttt{duration} seconds\\
+	\texttt{XAnonConnect(sock, dag)} & Connect to \texttt{ddag} with current anonymization settings\\
+	\texttt{XAnonSend(sock, payload)} & Sends a packet with current anonymization settings\\
+	\texttt{XAnonGetStatus(sock)} & Retrieves the current anonymization settings for \texttt{sock}\\
+	\hline
+	\end{tabular}
+\end{center}
 
 
+\section{Example Application: Web Browser}
 
 \end{document}  
