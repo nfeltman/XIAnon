@@ -8,6 +8,37 @@
 \usepackage{epstopdf}
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
 
+
+%%
+%% TIKZ for drawing DAGs (not sure how much of the below is necessary)
+%%
+
+\usepackage{tikz}
+\usepackage{tkz-graph}
+\usetikzlibrary{shapes,arrows}
+
+\newcommand{\entrynode}[1]{
+  \SetVertexNormal[Shape      = circle,
+                   FillColor  = black,
+                   LineWidth  = 0pt,
+                   MinSize    = 0pt]
+  \Vertex[L={\tiny\,}]{#1}
+  \SetVertexNormal[Shape      = circle,
+                   FillColor  = white,
+                   LineWidth  = 2pt]
+}
+
+\SetUpEdge[lw         = 1.5pt,
+           color      = black,
+           labelcolor = white,
+           labeltext  = red,
+           labelstyle = {sloped,draw,text=blue}]
+
+\tikzset{node distance = 2cm}
+
+
+
+
 \title{Anonymity in XIA: Developer Tools and User Control}
 \author{Nicolas Feltman and David Naylor}
 \date{}                                           
@@ -15,6 +46,28 @@
 
 \begin{document}
 \maketitle
+
+
+DAG Example:\\
+\begin{center}
+\begin{tikzpicture}
+  \entrynode{A}
+  \Vertex[x=6,y=0,L=SID$_1$]{B}
+  \Vertex[x=2,y=-1,L=AD$_1$]{C}
+  \Vertex[x=4,y=-1,L=HID$_1$]{D}
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(A)(B)
+  \tikzstyle{EdgeStyle}=[dashed, bend right, ->]
+  \Edge(A)(C)
+  \tikzstyle{EdgeStyle}=[bend left=10, ->]
+  \Edge(C)(B)
+  \tikzstyle{EdgeStyle}=[dashed, ->]
+  \Edge(C)(D)
+  \tikzstyle{EdgeStyle}=[bend right, ->]
+  \Edge(D)(B)
+\end{tikzpicture}
+\end{center}
+
 
 \section{Introduction}
 \subsection{Anonymity}
