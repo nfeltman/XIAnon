@@ -106,7 +106,7 @@ In this section we will describe one possible way to implement a proxy protocol 
 
 \subsection{Proxy Addresses}
 
-One key feature of our proxy protocol design is including the proxy's address with the address of the final service provider in a single DAG.  This means that from the point of view of a client application developer, the use of a proxy can be expressed entirely within the end service's address DAG. Although we considered introducing a new principal type for proxy services, we found that they could be expressed sufficiently with the standard service principal type.  The DAG in Figure~\ref{fig:proxy-service} represents communication with the end service SID\textsubscript{E} via the proxy SID\textsubscript{P}, with fallback paths for both.  We do not cover in this document how the proxy's DAG is resolved. \textbf{RESOLVED?}
+One key feature of our proxy protocol design is including the proxy's address with the address of the final service provider in a single DAG.  This means that from the point of view of a client application developer, the use of a proxy can be expressed entirely within the end service's address DAG. Although we considered introducing a new principal type for proxy services, we found that they could be expressed sufficiently with the standard service principal type.  The DAG in Figure~\ref{fig:proxy-service} represents communication with the end service SID\textsubscript{E} via the proxy SID\textsubscript{P}, with fallback paths for both.  We do not cover in this document how the proxy's DAG is obtained.
 
 \begin{figure}
 \centering
@@ -286,13 +286,13 @@ Our second method for anonymization involves explicit cooperation of the client'
 
 \subsection{Protocol}
 
-The client, running on host HID\textsubscript{C}, starts by requesting a psuedonym from its administrative domain, which has the address AD\textsubscript{C}.  The AD, which must explicitly support this operation, then generates a temporary service identifier, SID\textsubscript{temp}, and propagates forwarding information SID\textsubscript{temp}$\rightarrow$HID\textsubscript{C} to its routers. Note that it is critical that AD\textsubscript{C} not advertise this information to other ADs; only it knows the association between SID\textsubscript{temp} and HID\textsubscript{C} From here, the client simply uses the following DAG as the source address in its packets, excluding the usual HID\textsubscript{C} node:
+The client, running on host HID\textsubscript{C}, starts by requesting a psuedonym from its administrative domain, which has the address AD\textsubscript{C}.  The AD, which must explicitly support this operation, then generates a temporary service identifier, SID\textsubscript{N}, and propagates forwarding information SID\textsubscript{N}$\rightarrow$HID\textsubscript{C} to its routers. Note that it is critical that AD\textsubscript{C} not advertise this information to other ADs; only it knows the association between SID\textsubscript{N} and HID\textsubscript{C} From here, the client simply uses the following DAG as the source address in its packets, excluding the usual HID\textsubscript{C} node:
 
 \begin{center}
 \begin{tikzpicture}
 	\entrynode{B}
 	\Vertex[x=2,y=0,L=AD\textsubscript{C}]{A}
-	\Vertex[x=4,y=0,L=SID\textsubscript{temp}]{H}
+	\Vertex[x=4,y=0,L=SID\textsubscript{N}]{H}
 	\tikzstyle{EdgeStyle}=[->]
 	\Edge(B)(A)
 	\tikzstyle{EdgeStyle}=[->]
