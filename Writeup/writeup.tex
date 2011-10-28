@@ -50,7 +50,7 @@
 \section{Introduction}
 The desire for anonymous communication in the Internet has made it a much-studied issue. Several standard approaches to anonymity have emerged, normally involving some number of explicitly identified proxies  due to the dumb nature of current routers. Although none of these methods are perfect, they generally meet most users' needs. Little work has been done, however, exploring ways to make these methods easily utilized by application developers and easily understood by end users.
 
-Our goal is three-fold. First, we consider existing methods for achieving anonymous communication in the context of the eXpressive Internet Architecture (XIA). As we discuss below, novel features of XIA in many cases allow these existing techniques to be implemented more elegantly. Second, we introduce an anonymous socket API, which provides application developers a dead-easy way to use anonymous communication over XIA. Finally, we consider application users. Using the anonymous socket API, we will write a web proxy that extends the functionality of off-the-shelf browsers to allow anonymous Web browsing over XIA. Anonymization settings will be controllable by the user through an intuitive, easily understood GUI.
+Our goal is three-fold. First, we consider existing methods for achieving anonymous communication in the context of the eXpressive Internet Architecture (XIA). As we discuss below, novel features of XIA in many cases allow these existing techniques to be implemented more elegantly. Second, we introduce an anonymous socket API extension, which provides application developers a dead-easy way to use anonymous communication over XIA. Finally, we consider application users. Using the anonymous socket API, we will write a web proxy that extends the functionality of off-the-shelf browsers to allow anonymous Web browsing over XIA. Anonymization settings will be controllable by the user through an intuitive, easily understood GUI.
 
 \subsection{XIA}
 Some features of XIA have implications when it comes to anonymity. We briefly describe the key ideas here and elaborate on their impact on anonymous communication later.
@@ -303,28 +303,34 @@ The client, running on host HID\textsubscript{C}, starts by requesting a psuedon
 \section{An API for Developers}
 As we have discussed above, XIA allows for simple, if not elegant, ways to employ techniques for anonymization. For instance, we explored how an application can achieve fine-grain control over the use of a proxy service through DAG manipulation. We also proposed the use of temporary SIDs as pseudonyms.
 
-Both of these strategies incorporate anonymity by leveraging core features of XIA. Thus, it is both possible and useful to a standard set of tools implementing these techniques to application developers --- it would be silly for each developer to implement his/her own functions for adding a proxy service to all outgoing DAGs, for example.
+Both of these strategies incorporate anonymity by leveraging core features of XIA. Thus, it is both possible and useful to provide a standard set of tools implementing these techniques to application developers --- it would be silly for each developer to implement his/her own functions for adding a proxy service to all outgoing DAGs, for example.
 
-We have implemented these tools in the form of the XAnonSocket API, an extension to the XSocket API. (The XSocket API, as the name suggests, allows developers to communicate with sockets over XIA, much like network applications today use TCP or UDP sockets.) The XAnonSocket API allows developers to specify how they want to achieve anonymity (i.e., by routing traffic through a proxy of their choice) just once, after which they can send packets using the specified service with no extra effort. In \S~\ref{sec:api-interface} we present the interface of the XAnonSocket API.
+We will implement these tools in the form of an extension to the XSocket API. (The XSocket API, as the name suggests, allows developers to communicate with sockets over XIA, much like network applications today use TCP or UDP sockets.) These new functions allow developers to specify how they want to achieve anonymity (i.e., by routing traffic through a proxy of their choice) just once, after which they can send packets using the specified service with no extra effort, using the standard \texttt{XSend()} and \texttt{XRecv()} calls. In \S~\ref{sec:api-interface} we present the interface of our extension to the XSocket API. (As our implementation will involve repeated manipulation of DAGs, we also propose new standard DAG manipulation functions. We expect this list to grow as we implement the new API functions.)
 
-\subsection{API Interface}
+\subsection{DAG Library Extension}
+
+\begin{center}
+	\begin{tabular}{l p{7cm}}
+	\textbf{Function} 	&	\textbf{Description}\\
+	\hline
+	\texttt{AppendDag(dag1, dag2)} & Appends \texttt{dag2} to the end of \texttt{dag1}.  This is used to create a proxy-routed address. \\ \hline
+	\end{tabular}
+\end{center}
+
+\subsection{XSocket API Extension}
 \label{sec:api-interface}
 
 \begin{center}
 	\begin{tabular}{l p{7cm}}
 	\textbf{Function} 	&	\textbf{Description}\\
 	\hline
-	\texttt{XAnonSocket()} & Creates an anonymous XIA socket\\
-	\texttt{XAnonRegisterAnonymizer(sock, dag)} & Specifies the DAG of an anonymization (e.g., proxy) service all packets sent through \texttt{sock} should be routed through\\
-	\texttt{XAnonUseTempSID(sock, duration)} & Future packets should be sent from a temporary SID with HID elided. A new SID is generated after \texttt{duration} seconds\\
-	\texttt{XAnonConnect(sock, dag)} & Connect to \texttt{ddag} with current anonymization settings\\
-	\texttt{XAnonSend(sock, payload)} & Sends a packet with current anonymization settings\\
-	\texttt{XAnonGetStatus(sock)} & Retrieves the current anonymization settings for \texttt{sock}\\
+	\texttt{XAnonUseTempSID(sock, duration)} & Requests a temproary service identifier from the AD.  Future packets from this socket will use this SID with the HID elided. A new SID is generated after \texttt{duration} seconds. \\
+	\texttt{XAnonConnect(sock, proxy\_dag, dest\_dag)} & Connect to \texttt{dest\_dag} with the proxy given in \texttt{proxy\_dag}.\\
+	\texttt{XAnonGetStatus(sock)} & Retrieves the current anonymization settings for \texttt{sock}.\\
 	\hline
 	\end{tabular}
 \end{center}
 
 
-\section{Example Application: Web Browser}
 
 \end{document}  

@@ -36,13 +36,13 @@ Other techniques include using broadcasts or multicasts to hide the intended rec
 
 
 \section{Status Report}
-Based on prior literature, we have identified precise definitions of varying levels of anonymity and described in detail two techniques for achieving sender anonymity, the most common, in XIA. We have designed the interface to the XAnonSocket API, an extension to the XSocket API providing an implementation of these anonymous communication techniques.
+Based on prior literature, we have identified precise definitions for various levels of anonymity, and studied common methods for achieving anonymity in real systems.  We then studied the design of XIA and the unique challenges and opportunities it presents in implementing anonymization services.  We proceeded by describing two techniques for achieving sender anonymity: in-network proxy and temporary service identifiers. We then designed the interface to the XAnonSocket API, an extension to the XSocket API providing an implementation of these anonymous communication techniques. We also familiarized ourselves with the existing XIA prototype in order to assess the feasibility of our proposed anonymous socket API and extended Web proxy.
 
 \section{Action Plan}
 \begin{description}
 \item[In 1 week] Consider protocols for achieving other levels of anonymity and explore their adaptation to XIA.
 \item[In 2.5 weeks] Implement and test the XAnonSocket API.
-\item[In 4 weeks] Modify existing XIA Wweb proxy to use the XAnonSocket API to allow anonymous Web browsing. (This will also involve implementing an in-network proxy service.)
+\item[In 4 weeks] Modify existing XIA Web proxy to use the XAnonSocket API to allow anonymous Web browsing. (This will also involve implementing an in-network proxy service.)
 \item[In 5 weeks] Create an intuitive and easily understood GUI allowing users to control browser anonymity settings.
 \item[In 6 weeks] Finish documentation and write-up.
 \end{description}
