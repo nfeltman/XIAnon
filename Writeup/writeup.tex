@@ -235,7 +235,23 @@ The client then binds to this source DAG, sending all future communications to i
 
 \section{Approach: Temporary Service IDs}
 
+Our second method for anonymization involves explicit cooperation of the client's AD.  In this method, the client requests a temporary service ID, or {\em pseudonym}, from the AD through a special mechanism.  It then uses this pseudonym (bound within the AD) as its return address.  This level of anonymity is acceptible for some applications.  
 
+\subsection{Protocol}
+
+The client, running on host HID\textsubscript{C}, starts by requesting a psuedonym from its administrative domain, which has the address AD\textsubscript{C}.  The AD, which must explicitly support this operation, then generates a unique service identifier, SID\textsubscript{P}, and adds SID\textsubscript{P}$\rightarrow$HID\textsubscript{C} to its forwarding tables.  From here, the client simply uses the following DAG as the source address in its packets:
+
+\begin{center}
+\begin{tikzpicture}
+	\entrynode{B}
+	\Vertex[x=2,y=0,L=AD\textsubscript{C}]{A}
+	\Vertex[x=4,y=0,L=SID\textsubscript{P}]{H}
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(B)(A)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(A)(H)
+\end{tikzpicture}
+\end{center}
 
 \section{An API for Developers}
 As we have discussed above, XIA allows for simple, if not elegant, ways to employ techniques for anonymization. For instance, we explored how an application can achieve fine-grain control over the use of a proxy service through DAG manipulation. We also proposed the use of temporary SIDs as pseudonyms.
