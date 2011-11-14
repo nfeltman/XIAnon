@@ -48,9 +48,9 @@
 \begin{document}
 \maketitle
 \section{Introduction}
-The desire for anonymous communication in the Internet has made it a much-studied issue. Several standard approaches to anonymity have emerged, normally involving some number of explicitly identified proxies  due to the dumb nature of current routers. Although none of these methods are perfect, they generally meet most users' needs. Little work has been done, however, exploring ways to make these methods easily utilized by application developers and easily understood by end users.
+The desire for anonymous communication in the Internet has made it a much-discussed issue in both technical and non-technical circles. Several standard approaches to anonymity have emerged, normally involving some number of explicitly identified proxies  due to the dumb nature of current routers. Although none of these methods are perfect, they generally meet most users' needs. Little work has been done, however, exploring ways to make these methods easily utilized by application developers and easily understood by end users.
 
-Our goal is three-fold. First, we consider existing methods for achieving anonymous communication in the context of the eXpressive Internet Architecture (XIA). As we discuss below, novel features of XIA in many cases allow these existing techniques to be implemented more elegantly. Second, we introduce an anonymous socket API extension, which provides application developers a dead-easy way to use anonymous communication over XIA. Finally, we consider application users. Using the anonymous socket API, we will write a web proxy that extends the functionality of off-the-shelf browsers to allow anonymous Web browsing over XIA. Anonymization settings will be controllable by the user through an intuitive, easily understood GUI.
+Our goal is three-fold. First, we consider existing methods for achieving anonymous communication in the context of the eXpressive Internet Architecture (XIA). As we discuss below, novel features of XIA in many cases allow these existing techniques to be implemented more elegantly. Second, we introduce an anonymous socket API extension, which provides application developers a dead-easy way to use anonymous communication over XIA. Finally, we consider application users. Using the anonymous socket API, we will create a preference pane providing OS level control over the extended API functionality. Anonymization settings will be controllable by the user through an intuitive, easily understood GUI.
 
 \subsection{XIA}
 Some features of XIA have implications when it comes to anonymity. We briefly describe the key ideas here and elaborate on their impact on anonymous communication later.
@@ -324,12 +324,23 @@ We will implement these tools in the form of an extension to the XSocket API. (T
 	\begin{tabular}{l p{7cm}}
 	\textbf{Function} 	&	\textbf{Description}\\
 	\hline
-	\texttt{XAnonUseTempSID(sock, duration)} & Requests a temproary service identifier from the AD.  Future packets from this socket will use this SID with the HID elided. A new SID is generated after \texttt{duration} seconds. \\
-	\texttt{XAnonConnect(sock, proxy\_dag, dest\_dag)} & Connect to \texttt{dest\_dag} with the proxy given in \texttt{proxy\_dag}.\\
-	\texttt{XAnonGetStatus(sock)} & Retrieves the current anonymization settings for \texttt{sock}.\\
+	\texttt{XEnableAnonymizer()} & Instructs the socket layer to route all traffic through an anonymization service. If none is specified, a default is used.\\
+	\texttt{XDisableAnonymizer()} & Instructs the socket layer not to use an anonymization service.\\
+	\texttt{XSetAnonymizer(dag)} & Sets the DAG of an anonymization service.\\
+	\texttt{XEnableTemporarySID()} & Instructs the socket layer to use a temporary SID as a source address.\\
+	\texttt{XSetTemporarySIDDuration(duration)} & Sets the duration of temporary SIDs to \texttt{duration} seconds. When a temporary SID expires, a new one is generated.\\
 	\hline
 	\end{tabular}
 \end{center}
+
+\section{System-Wide User Controls}
+By introducing an anonymization preference pane, we allow users to ensure that all outbound traffic from their system is anonymized according to the specified settings (Figure~\ref{fig:system_anon_settings}).
+
+\begin{figure}
+\includegraphics{images/system_anon_settings.png}
+\caption{System-wide controls bypass applications entirely, allowing users to ensure all traffic is sent as per their anonymization settings.}
+\label{fig:system_anon_settings}
+\end{figure}
 
 
 
