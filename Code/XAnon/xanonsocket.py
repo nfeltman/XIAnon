@@ -36,17 +36,26 @@ def XEnableAnonymizer():
     config.set('Proxy', 'Enabled', True)
     save_config(config)
 
+def XDisableAnonymizer():
+    config = get_config()
+    config.set('Proxy', 'Enabled', False)
+    save_config(config)
+
+def XGetAnonymizerEnabled():
+    config = get_config()
+    return config.get('Proxy', 'Enabled')
+
 
 
 # Wrappers around Xsocket API functions
 def Xconnect(*args):
     config = get_config()
-    if config.get('Proxy', 'Enabled'):
+    if config.get('Proxy', 'Enabled') == 'True':
         proxy_dag = config.get('Proxy', 'DAG')
         sock = xsocket.Xconnect(args[0], proxy_dag)
         xsocket.Xsend(sock, args[1], len(args[1]), 0) # send actual dest dag to proxy
     else:
-        sock = xsocket.Xconnect(args)
+        sock = xsocket.Xconnect(args[0], args[1])
     return sock
 
 Xsendto = xsocket.Xsendto

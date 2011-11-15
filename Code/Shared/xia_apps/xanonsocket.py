@@ -1,1 +1,1 @@
-../socket_wrapper/xanonsocket.py
+../../XAnon/xanonsocket.py

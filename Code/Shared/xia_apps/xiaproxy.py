@@ -368,7 +368,7 @@ def requestCID(CID):
 
 def xiaHandler(control, path, payload, browser_socket):
     # Set anonymization settings --TODO: TEMP UNTIL GUI
-    xanonsocket.XEnableAnonymizer()
+    #xanonsocket.XEnableAnonymizer()
     
     # Configure XSocket
     xanonsocket.set_conf("xsockconf_python.ini", "xiaproxy.py")
