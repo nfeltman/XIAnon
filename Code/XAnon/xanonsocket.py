@@ -51,12 +51,18 @@ def XGetAnonymizerEnabled():
 def Xconnect(*args):
     config = get_config()
     if config.get('Proxy', 'Enabled') == 'True':
+        print 'Connecting via an anonymizer'
         proxy_dag = config.get('Proxy', 'DAG')
-        sock = xsocket.Xconnect(args[0], proxy_dag)
-        xsocket.Xsend(sock, args[1], len(args[1]), 0) # send actual dest dag to proxy
+        rv = xsocket.Xconnect(args[0], proxy_dag)
+        try:
+            print 'about to send real dag'
+            xsocket.Xsend(args[0], args[1], len(args[1]), 0) # send actual dest dag to proxy  TODO: send proxy dag + dest dag
+            print 'sent %s' % args[1]
+        except:
+            print 'sending dag failed'
     else:
-        sock = xsocket.Xconnect(args[0], args[1])
-    return sock
+        rv = xsocket.Xconnect(args[0], args[1])
+    return rv
 
 Xsendto = xsocket.Xsendto
 Xrecvfrom = xsocket.Xrecvfrom

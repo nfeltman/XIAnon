@@ -309,7 +309,9 @@ def sendSIDRequest(ddag, payload, browser_socket):
         # Connect to service
         xanonsocket.Xconnect(sock, ddag)
         # Send request
+        print 'about to send real payload'
         xanonsocket.Xsend(sock, payload, len(payload), 0)
+        print 'sent real payload'
     except:
         print 'ERROR: xiaproxy.py: sendSIDRequest: error binding to sdag, connecting to ddag, or sending SID request:\n%s' % payload
 
