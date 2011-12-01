@@ -2,6 +2,7 @@ import os
 import xsocket
 import ConfigParser
 import pickle
+import Tkinter
 import tkMessageBox
 
 conf_path = 'anonymization_configuration.dat'
@@ -34,7 +35,7 @@ def get_config():
         # Add defaults
         config['proxy'] = dict()
         config['proxy']['enabled'] = False
-        config['proxy']['dag'] = 'RE AD:1000000000000000000000000000000000000001 HID:0000000000000000000000000000000000000002 SID:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        config['proxy']['dag'] = 'RE AD:1000000000000000000000000000000000000002 HID:0000000000000000000000000000000000000002 SID:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
         config['proxy']['exceptions'] = ['Test app 1', 'Test app 2']  # TODO: remove test apps
         config['temp_ids'] = dict()
         config['temp_ids']['enabled'] = False
@@ -152,37 +153,90 @@ def XGetDisallowedPrincipalAction():
     config = get_config()
     return config['principal_filter']['action']
 
+def should_proceed_check_disallowed_principals(dag):
+    print 'checking DAG: %s' % dag
+    disallowed_types_string = ''
+    disallowed_types_used = False
+    if not XGetSIDsEnabled() and 'SID:' in dag:
+        print 'content!!!'
+        disallowed_types_used = True
+        disallowed_types_string += '\nService'
+    if not XGetCIDsEnabled() and 'CID:' in dag:
+        disallowed_types_used = True
+        disallowed_types_string += '\nContent'
+    if disallowed_types_used:
+        print 'disallowed type!!!'
+        action = XGetDisallowedPrincipalAction()
+        if action == 'block':
+            print 'block'
+            return False
+        elif action == 'alert':
+            print 'alert'
+            # TODO: should be less intrusive
+            root = Tkinter.Tk()
+            root.withdraw()
+            tkMessageBox.showwarning("Privacy Settings Alert", "Outbound network traffic using the following disallowed princiapl types was blocked:\n%s" % disallowed_types_string)
+            root.destroy()
+            return False
+        elif action == 'ask':
+            print 'ask'
+            root = Tkinter.Tk()
+            root.withdraw()
+            if tkMessageBox.askyesno("Privacy Settings Control", "Outbound network traffic is attempting to use the following disallowed princiapl types. Would you like to allow this?\n%s" % disallowed_types_string):
+                root.destroy()
+                return True
+            else:
+                root.destroy()
+                return False
+        else:
+            print 'should_proceed_check_disallowed_principals(): Unrecognized action: %s' % action
+    else:
+        return True
+            
+
+
 
 
 # Wrappers around Xsocket API functions
 def Xconnect(*args):
+    if not should_proceed_check_disallowed_principals(args[1]):
+        return -2
     if XGetAnonymizerEnabled():
-        print 'Connecting via an anonymizer'
         proxy_dag = XGetAnonymizer()
         rv = xsocket.Xconnect(args[0], proxy_dag)
         try:
-            print 'about to send real dag'
             xsocket.Xsend(args[0], args[1], len(args[1]), 0) # send actual dest dag to proxy  TODO: send proxy dag + dest dag
-            print 'sent %s' % args[1]
         except:
             print 'sending dag failed'
     else:
-        print 'Not connecting with anonymizer'
         rv = xsocket.Xconnect(args[0], args[1])
     return rv
 
 def XconnectNoAnonymizer(application, *args):
-    print 'checking if %s is an exception' % application
     if application in XGetAnonymizerExceptions():
+        if not should_proceed_check_disallowed_principals(args[1]):
+            return -2
         return xsocket.Xconnect(args[0], args[1])
     else:
-        print '%s not in exceptions' % application
+        root = Tkinter.Tk()
+        root.withdraw()
         if tkMessageBox.askyesno("Privacy Settings Control", "'%s' has requested to bypass system anonymization settings. Would you like to allow this?" % application):
             XAddAnonymizerException(application)
-            XconnectNoAnonymizer(application, args[0], args[1])
-        
+            root.destroy()
+            return XconnectNoAnonymizer(application, args[0], args[1])
+        root.destroy()
 
-Xsendto = xsocket.Xsendto
+def Xsendto(*args):        
+    if not should_proceed_check_disallowed_principals(args[4]):
+        return -2
+    return xsocket.Xsendto(*args)
+                           
+def XgetCID(*args):
+    if not should_proceed_check_disallowed_principals(args[1]):
+        return -2
+    return xsocket.XgetCID(*args)
+
+#Xsendto = xsocket.Xsendto
 Xrecvfrom = xsocket.Xrecvfrom
 Xsocket = xsocket.Xsocket
 #Xconnect = xsocket.Xconnect
@@ -190,7 +244,7 @@ Xbind = xsocket.Xbind
 Xclose = xsocket.Xclose
 Xrecv = xsocket.Xrecv
 Xsend = xsocket.Xsend
-XgetCID = xsocket.XgetCID
+#XgetCID = xsocket.XgetCID
 XputCID = xsocket.XputCID
 Xaccept = xsocket.Xaccept
 set_conf = xsocket.set_conf

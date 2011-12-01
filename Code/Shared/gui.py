@@ -9,6 +9,8 @@ from tkFont import *
 change_service_window = None
 change_service_name = None
 change_service_address = None
+add_exception_window = None
+add_exception_name = None
 
 
 
@@ -74,13 +76,32 @@ def btn_remove_exception_click():
         xanonsocket.XRemoveAnonymizerException(index)
     load_app_exceptions_listbox()
 
+def btn_add_exception_click():
+    global add_exception_window, add_exception_name
+    add_exception_window = Toplevel()
+    add_exception_window.title("Add Exception")
+    Label(add_exception_window, text="To allow an application to bypass this anonymizer, enter \nits name and click 'Add'.", justify=LEFT).grid(row=0, padx=10, pady=10, sticky=W)
+
+    add_exception_name = StringVar()
+    Entry(add_exception_window, textvariable = add_exception_name).grid(row=1, padx=10, sticky=W+E)
+
+    frame_buttons = Frame(add_exception_window)
+    frame_buttons.grid(row=2, padx=10, pady=10, sticky=E)
+    Button(frame_buttons, text="Cancel", command=add_exception_window.destroy).grid(row=0, column=0, sticky=E)
+    Button(frame_buttons, text="Add", command=btn_add_click).grid(row=0, column=1, sticky=E)
+
+def btn_add_click():
+    global add_exception_window, add_exception_name
+    xanonsocket.XAddAnonymizerException(add_exception_name.get())
+    load_app_exceptions_listbox()
+    add_exception_window.destroy()
+
 def duration_validate_and_save():
     try:
         seconds = int(duration.get())
     except ValueError:
         return False
     xanonsocket.XSetTempSIDDuration(seconds)
-    print 'saved duration'
     return True
 
 def cbx_allow_SIDs_changed():
@@ -145,7 +166,7 @@ frame_add_remove_exception = Frame(frame_exceptions)
 frame_add_remove_exception.grid(row=2, columnspan=2, sticky=E)
 btn_remove_exception = Button(frame_add_remove_exception, text="Remove", command=btn_remove_exception_click)
 btn_remove_exception.grid(row=0, column=0, sticky=E)
-btn_add_exception = Button(frame_add_remove_exception, text="Add")
+btn_add_exception = Button(frame_add_remove_exception, text="Add", command=btn_add_exception_click)
 btn_add_exception.grid(row=0, column=1, sticky=E)
 
 

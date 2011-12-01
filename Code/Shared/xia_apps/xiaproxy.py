@@ -307,8 +307,8 @@ def sendSIDRequest(ddag, payload, browser_socket):
 
         rtt = time.time() 
         # Connect to service
-        xanonsocket.XconnectNoAnonymizer('xiaproxy', sock, ddag)
-        #xanonsocket.Xconnect(sock, ddag)
+        #xanonsocket.XconnectNoAnonymizer('Firefox', sock, ddag)  #Use this line instead of the next to request to bypass anonymizer
+        xanonsocket.Xconnect(sock, ddag)
         # Send request
         print 'about to send real payload'
         xanonsocket.Xsend(sock, payload, len(payload), 0)

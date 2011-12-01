@@ -30,14 +30,11 @@ def putCID(chunk):
     m.update(chunk)
     cid = m.hexdigest()
 
-    print 'waiting to get socket'
     sock = xsocket.Xsocket()
     if (sock<0):
         print "error opening socket"
         exit(-1)
-    print 'got socket'
     
-    print 'waiting to put content'
     # Put the content chunk
     content_dag = 'RE %s %s CID:%s' % (AD1, HID1, cid)
     xsocket.XputCID(sock, chunk, len(chunk), 0, content_dag, len(content_dag))
