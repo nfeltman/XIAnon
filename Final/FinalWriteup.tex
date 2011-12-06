@@ -1,3 +1,4 @@
+\documentclass{article}
 \usepackage{fullpage}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -5,8 +6,58 @@
 \usepackage{stmaryrd}
 \usepackage{hyperref}
 
+\usepackage{tikz}
+\usepackage{tkz-graph}
+\usetikzlibrary{shapes,arrows}
+
+\newcommand{\entrynode}[1]{
+  \SetVertexNormal[Shape      = circle,
+                   FillColor  = black,
+                   LineWidth  = 0pt,
+                   MinSize    = 0pt]
+  \Vertex[L={\tiny\,}]{#1}
+  \SetVertexNormal[Shape      = circle,
+                   FillColor  = white,
+                   LineWidth  = 2pt]
+}
+
+\SetUpEdge[lw         = 1.5pt,
+           color      = black,
+           labelcolor = white,
+           labeltext  = red,
+           labelstyle = {sloped,draw,text=blue}]
+
+\tikzset{node distance = 2cm}
+
+\title{Anonymity in XIA}
+\author{Nicolas Feltman, David Naylor}
 \begin{document}
+\maketitle
+\section{Introduction}
+Big themes: XIA can do anonymity well;  It's about more than technical architeture
+\section{Background}
+all David
+\subsection{XIA}
+\subsection{Anonymity}
+\section{Approach}
+\subsection{Proxies}
+Nico
+\subsection{Temporary SIDs}
+David
+\subsection{Principal-Based Control}
+David
+\section{Comparison}
+\subsection{Services vs. Features}
+\subsection{Threats vs. ``Meatures''}
+\section{Implementation}
+We implemented a single proxy and a version of the API.
+\subsection{Single Proxy DAG Manipulation}
+Nico
+\subsection{In-Network Services Issues}
+Nico
+\subsection{OS Integration and API}
+David
 
-
-
+\bibliography{FinalWriteup}
+\bibliographystyle{plain}
 \end{document}
