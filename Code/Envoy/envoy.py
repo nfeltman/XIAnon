@@ -5,9 +5,13 @@ import xsocket
 from xia_address import *
 
 
-def getPartAfterProxy(dag):
-	return ""
-
+def getPartAfterProxy(dag, proxy_sid):
+	sid_index = dag.find(proxy_sid)
+	if(sid_index==-1)
+		raise Exception('SID for proxy service was not found in address')
+	envoy_line_end = find(sid_index,'\n')
+	
+	return 
 
 def recv_with_timeout(sock, timeout=5):
     # Make socket non-blocking
@@ -83,9 +87,13 @@ def main():
 		
 		# make request to server
 		try:
-			# xsocket.Xbind(forward_sock, forward_dag)
-			xsocket.Xconnect(forward_sock, full_dst)   # TODO: once dagmanip is done, should just be end_server_addr
-			xsocket.Xsend(forward_sock, request_payload, len(request_payload), 0)
+			if()#content
+				# xsocket.Xbind(sock, sdag);
+				xsocket.XgetCID(forward_sock, end_server_addr, len(end_server_addr))
+			else
+				# xsocket.Xbind(forward_sock, forward_dag)
+				xsocket.Xconnect(forward_sock, end_server_addr)   # TODO: once dagmanip is done, should just be end_server_addr
+				xsocket.Xsend(forward_sock, request_payload, len(request_payload), 0)
 		except:
 			print 'ERROR: envoy.py:  error forwarding request to final destination'
 			
