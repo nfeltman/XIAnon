@@ -8,11 +8,14 @@ class AddressDAG:
 		self.root = root
 		self.principal_map = principal_map
 
+def get_last_node(dag):
+	node = dag.root
+	while len(node.successors) > 0:
+		node = node.successors[0]
+	return node
+
 def get_last_princ(dag):
-        node = dag.root
-        while len(node.successors) > 0:
-                node = node.successors[0]
-        return node.principal
+	return get_last_node(dag).principal
 	
 def parse_DAG(str):
 	nodes = {}
@@ -54,12 +57,17 @@ def DAG_root_to_string(dag_root):
 	return res;
 
 def DAG_to_string(dag):
-        return DAG_root_to_string(dag.root)
+		return DAG_root_to_string(dag.root)
 
 def create_subDAG(dag, prin_name):
 	to_str = DAG_root_to_string(dag.principal_map[prin_name])
 	first_space = to_str.index(' ')
 	return parse_DAG("DAG"+to_str[first_space:])
+
+def append_dag(dag1, dag2):
+	dag1_sink = get_last_node(dag1)
+	dag1_sink.successors += dag2.root.successors
+	dag1.principal_map = dict(dag1.principal_map.items() + dag2.principal_map.items())
 	
 # examples
 ##dag_str = "DAG 0 1 - \n AD 2 - \n IP 2 - \n HID 3 - \n CID"
