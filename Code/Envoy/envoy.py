@@ -9,8 +9,10 @@ def getPartAfterProxy(dag, proxy_sid):
 	sid_index = dag.find(proxy_sid)
 	if(sid_index==-1)
 		raise Exception('SID for proxy service was not found in address')
-	envoy_line_end = find(sid_index,'\n')
-	
+	envoy_line_end = dag.find(sid_index,'\n')
+	envoy_after_name = dag.find(sid_index,' ')
+	if(envloy_line_end==-1 || envoy_after_name==-1)
+		
 	return 
 
 def recv_with_timeout(sock, timeout=5):
