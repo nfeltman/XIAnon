@@ -4,17 +4,6 @@ import fcntl
 import xsocket
 from xia_address import *
 
-
-def getPartAfterProxy(dag, proxy_sid):
-	sid_index = dag.find(proxy_sid)
-	if(sid_index==-1)
-		raise Exception('SID for proxy service was not found in address')
-	envoy_line_end = dag.find(sid_index,'\n')
-	envoy_after_name = dag.find(sid_index,' ')
-	if(envloy_line_end==-1 || envoy_after_name==-1)
-		
-	return 
-
 def recv_with_timeout(sock, timeout=5):
     # Make socket non-blocking
     try:
@@ -69,7 +58,7 @@ def main():
 		full_dst = xsocket.Xrecv(listen_sock, 2000, 0)
 		print "full destination is: "+full_dst
 		
-		end_server_addr = getPartAfterProxy(full_dst)
+		end_server_addr = DAG_to_string(create_subDAG(parse_DAG(full_dst),'NAME'))
 		request_payload = xsocket.Xrecv(listen_sock, 2000, 0)
 		print "full destination is: "+full_dst
 		print "end server address is: "+end_server_addr
@@ -89,7 +78,8 @@ def main():
 		
 		# make request to server
 		try:
-			if()#content
+			last_id = get_last_princ(end_server_addr)
+			if(len(last_id)>=3 and last_id[0:2]=="CID")
 				# xsocket.Xbind(sock, sdag);
 				xsocket.XgetCID(forward_sock, end_server_addr, len(end_server_addr))
 			else
