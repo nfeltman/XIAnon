@@ -48,5 +48,16 @@ def DAG_to_string(dag):
 	return res
 
 # examples
-dag=parse_DAG("DAG 0 1 - \n AD 2 - \n IP 2 - \n HID 3 - \n CID")
+dag_str = "DAG 0 1 - \n AD 2 - \n IP 2 - \n HID 3 - \n CID"
+dag=parse_DAG(dag_str)
+print(dag_str)
+print
 print(DAG_to_string(dag))
+
+print
+
+dag2_str = "DAG 2 0 - \n AD1 2 1 - \n HID1 2 - \n SID1 5 3 - \n AD2 5 4 - \n HID2 5 - \n SID2"
+dag2 = parse_DAG(dag2_str)
+print dag2_str
+print
+print(DAG_to_string(dag2))
