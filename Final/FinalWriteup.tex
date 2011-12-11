@@ -21,6 +21,18 @@
                    LineWidth  = 2pt]
 }
 
+\newcommand{\encryptednode}[2]{
+  \SetVertexNormal[Shape      = circle,
+                   FillColor  = white,
+                   LineWidth  = 2pt]
+  \tikzstyle{VertexStyle}=[dotted, draw, circle]
+  \Vertex[#1]{#2}
+  \SetVertexNormal[Shape      = circle,
+                   FillColor  = white,
+                   LineWidth  = 2pt]
+}
+
+
 \SetUpEdge[lw         = 1.5pt,
            color      = black,
            labelcolor = white,
@@ -100,7 +112,10 @@ We adopt terminology proposed by Pfitzmann and K\"{o}hntopp~\cite{terminology} t
 \label{approach}
 
 \subsection{Proxies}
+\label{proxies}
 Nico
+
+{\bf NOTE to Nico}: you should say something about how we're proposing XIA adopt some form of partial DAG encryption, because later I say we talked about it in this section...
 
 \subsection{Temporary Source Addresses}
 A conceptually simpler approach to achieving anonymity is to use a temporary source address that is unsinkable to you. In today's IP Internet there isn't really a good way to do this. If IP addresses are statically assigned, periodically changing your address is a hassle and may require the involvement of your network administrator, who is unlikely to be willing to assign you a new address every time you want a new identity. Even if addresses are assigned dynamically and you obtain a new one from a DHCP server as often as you'd like, this solution still has major drawbacks. First, most users won't be able to do this from home. A user with a typical home Wi-Fi network can change his computer's IP address to his heart's content, but as his packets pass through his router's NAT, the source address will be overwritten with the public IP assigned to him by his ISP. Further limiting the utility of this approach, your IP address is the source of all traffic you send from your machine, regardless of the application; in some cases, you might want messages from one application to be unlinkable to messages sent by another.
@@ -140,8 +155,48 @@ Note that we have overcome all of the limitations of the temporary address appro
 Of course, this strategy is not entirely without limitations. Clearly, anyone using this technique must trust his or her local AD not to reveal the mapping between machine and temporary ID; this may not always be reasonable. On the other hand, this can be looked at as a feature rather than a bug. If an AD maintains a log the SIDs registered with it, law enforcement agencies could potentially access them with a subpoena if criminal activity is suspected.
 
 
-\subsection{Principal-Based Control}
-David
+\subsection{Principal-Based Traffic Control}
+A novel approach possible only in XIA is principal-based traffic control. Broadly speaking, a user may to prevent applications from sending packets that are addressed using certain principal types, as the use of a particular principal reveals something about the communication.
+
+For instance, the presence of a CID makes it clear that a packet's purpose is to retrieve a piece of content. Furthermore, it is conceivable that someone might implement a ``reverse lookup" service that does the opposite of the naming service: translates XIDs back into human-readable names. Thus, anyone sniffing our privacy-seeking users's traffic who sees a content request can find out the name of the content from the CID.
+
+Additionally, as new principal types are added to the network in the future, they may similarly reveal information users would prefer to keep private.
+
+In the current XIA design, the operating system would simply drop any packets making use of a disallowed principal (and optionally alert the user). But if a mechanism for partial DAG encryption were adopted, as discussed in \S\ref{proxies}, the system could rewrite DAGs in a way that conceals the use of a particular principal. For example, consider a content request with the following DAG:
+\begin{center}
+\begin{tikzpicture}
+  \entrynode{A}
+  \Vertex[x=6,y=0,L=CID]{B}
+  \Vertex[x=2,y=-1,L=AD]{C}
+  \Vertex[x=4,y=-1,L=HID]{D}
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(A)(B)
+  \tikzstyle{EdgeStyle}=[dashed, bend right, ->]
+  \Edge(A)(C)
+  \tikzstyle{EdgeStyle}=[bend left=10, ->]
+  \Edge(C)(B)
+  \tikzstyle{EdgeStyle}=[dashed, ->]
+  \Edge(C)(D)
+  \tikzstyle{EdgeStyle}=[bend right, ->]
+  \Edge(D)(B)
+\end{tikzpicture}
+\end{center}
+Rather than dropping this packet, the DAG could instead be rewritten as follows, where the dotted line indicates that the CID node is encrypted:
+\begin{center}
+\begin{tikzpicture}
+  \entrynode{A}
+  \Vertex[x=1.5,y=0,L=AD]{B}
+  \Vertex[x=3,y=0,L=HID]{C}
+  \encryptednode{x=4.5,y=0,L=CID}{D}
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(A)(B)
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(B)(C)
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(C)(D)
+\end{tikzpicture}
+\end{center}
+
 
 
 \section{Comparison}
