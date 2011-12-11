@@ -52,7 +52,7 @@ The desire for anonymous communication in the Internet has made it a much-discus
 
 Several standard approaches to anonymity have emerged, normally involving some number of explicitly identified proxies (e.g., Tor). Although none of these methods are perfect, they generally meet most users' needs from a technical standpoint. Where many fall short, however, is in making these systems easy to understand and configure for non-technical users; part of our project addresses this issue.
 
-Our goal is three-fold. First, we consider existing methods for achieving anonymous communication in the context of the eXpressive Internet Architecture (XIA)~\cite{xia}. As we discuss below, novel features of XIA in many cases allow these existing techniques to be implemented more elegantly. Second, we introduce an extension to the XIA socket API, which provides application developers a dead-easy way to use anonymous communication over XIA. Finally, we consider  users. We create a preference pane providing OS level control over the extended API functionality. Anonymization settings are controllable by the user through an intuitive, easily understood GUI.
+Our goal is three-fold. First, we consider existing methods for achieving anonymous communication in the context of the eXpressive Internet Architecture (XIA)~\cite{xia}. The question we ask ourselves is: Does XIA {\em break} anything? Second, we explore a more interesting question: Does XIA {\em add} anything? As we discuss below, novel features of XIA in many cases allow these existing techniques to be implemented more elegantly and in some cases enable entirely new approaches. Finally, we bring users and developers into the loop. We introduce an extension to the XIA socket API, which provides application developers a dead-easy way to use anonymous communication over XIA. Then, we create a preference pane providing OS level control over the extended API functionality. Anonymization settings are controllable by the user through an intuitive, easily understood GUI.
 
 The rest of this paper is organized as follows: in Section~\ref{background} we introduce pertinent features of XIA and review common terminology related to anonymity from the literature. Section~\ref{approach} examines the use of existing approaches in XIA as well as new ones made possible novel features of the architecture. In Section~\ref{comparison} we compare these approaches to one another in terms of the threats against which they provide protection and we compare the ``current" version of each method to its XIA counterpart. Finally, Section~\ref{implementation} presents our implementation and in Section~\ref{conclusion} we summarize and conclude.
 
@@ -69,7 +69,7 @@ In contrast with today's host-based Internet, XIA provides a framework for commu
 In this example, \texttt{www.amazon.com} can be viewed as a \emph{service} principal. In the case where communication with a particular machine truly is the intent, traditional host-based communication can still be achieved via the \emph{host} principal. Other principals include static \emph{content} (e.g., images) and \emph{autonomous domains} (similar to today's autonomous systems).
 
 \subsubsection{DAG-Based Addressing}
-Addresses in XIA are represented as DAGs (directed acyclic graphs). Using DAGs allows senders to give the network very detailed instructions about how a packet should be routed. DAGs also allow senders to provide {\em fallback} routes to be used in case the network cannot find the sender's primary intent or does not understand a new principal type. For example, in the scenario above, the user's browser might include the address of a particular Amazon server as a backup in case a packet reaches a router that doesn't know how to find the service \texttt{www.amazon.com} directly.
+Addresses in XIA are represented as DAGs (directed acyclic graphs). Using DAGs allows senders to give the network very detailed instructions about how a packet should be routed. DAGs also allow senders to provide {\em fallback} routes to be used in case the network cannot find the sender's primary intent or does not understand a new principal type. For example, in the scenario above, the user's browser might include the address of a particular Amazon server as a backup in case a packet reaches a router that doesn't know how to find the service \texttt{www.amazon.com} directly. Figure~\ref{fig:proxy-service} depicts a typical DAG.
 
 \begin{figure}
 \centering
@@ -181,16 +181,18 @@ In the current XIA design, the operating system would simply drop any packets ma
   \Edge(D)(B)
 \end{tikzpicture}
 \end{center}
-Rather than dropping this packet, the DAG could instead be rewritten as follows, where the dotted line indicates that the CID node is encrypted:
+Rather than dropping this packet, the DAG could instead be rewritten as follows, where the dotted line indicates that the CID node is encrypted (with host HID's public key):
 \begin{center}
 \begin{tikzpicture}
   \entrynode{A}
-  \Vertex[x=1.5,y=0,L=AD]{B}
+  \Vertex[x=1.5,y=-1,L=AD]{B}
   \Vertex[x=3,y=0,L=HID]{C}
   \encryptednode{x=4.5,y=0,L=CID}{D}
   \tikzstyle{EdgeStyle}=[->]
+  \Edge(A)(C)
+  \tikzstyle{EdgeStyle}=[dashed, bend right, ->]
   \Edge(A)(B)
-  \tikzstyle{EdgeStyle}=[->]
+  \tikzstyle{EdgeStyle}=[bend right, ->]
   \Edge(B)(C)
   \tikzstyle{EdgeStyle}=[->]
   \Edge(C)(D)
@@ -207,16 +209,49 @@ Rather than dropping this packet, the DAG could instead be rewritten as follows,
 
 \section{Implementation}
 \label{implementation}
-We implemented a single proxy and a version of the API.
+As a proof-of-concept, we implemented a simple proxy service for anonymizing XIA traffic which we refer to as Envoy. Envoy is written in Python and communicates over XIA using the Xsocket interface. In \S\ref{proxy} we describe in detail how we use DAGs to route traffic through Envoy. The process of implementing this service brought to our attention a handful of issues relating to in-network services, which we discuss in \S\ref{in-network-services}.
+
+In keeping with our goal to bring users and developers into the loop, we also implemented an extension to the Xsocket API aimed at giving application developers easy access to anonymization tools (\S\ref{api}) and a preference pane enabling users to have the final say as to what applications can and cannot do with respect to anonymity (\S\ref{control}).
+
 \subsection{Single Proxy DAG Manipulation}
+\label{proxy}
 Nico
+
 \subsection{In-Network Services Issues}
+\label{in-network-services}
 Nico
-\subsection{OS Integration and API}
-David
+
+\subsection{For Developers: XSocket API Extension}
+\label{api}
+The XSocket API, as the name suggests, allows developers to communicate with sockets over XIA, much like network applications today use the BSD socket API. We extended this functionality to include support for some of the anonymity methods we have described by implementing a thin layer over the XSocket API (using Python for quick prototyping).
+
+These new and modified functions allow developers to specify how they want to achieve anonymity (i.e., by routing traffic through a proxy of their choice) just once, after which they can send packets using the specified service with no extra effort, using the standard \texttt{Xsend()}, \texttt{Xrecv()}, and \texttt{XgetCID()} calls. Table~\ref{table:api-extension} presents the interface of our extension to the XSocket API.
+
+\begin{table}
+\centering
+	\begin{tabular}{l p{7.5cm}}
+	\textbf{Function} 	&	\textbf{Description}\\
+	\hline
+	\texttt{Xconnect(sock, dDAG)} & Opens a connection with \texttt{dDAG} using system anonymization settings, which might include adding a node for a proxy service to the DAG or replacing the host's HID with a temporary SID in the source DAG.\\
+	\texttt{XconnectCustomAnonymizer(sock, dDAG, pDAG)} & Opens a connection with \texttt{dDAG} that sends all traffic through a proxy specified by \texttt{pDAG}. The user will be prompted to grant or deny the application's request to deviate from system anonymizer settings.\\
+	\texttt{XconnectWithoutAnonymizer(sock, dDAG)} & Opens a socket with \texttt{dDAG} that doesn't send traffic through any anonymizer. Useful if the application wants complete control over where the proxy is placed in the DAG. The user will be prompted to grant or deny the application's request to bypass system settings.\\
+	\texttt{XgetCID(sock, cDAG)} & Instructs the socket layer to retrieve the content specified by \texttt{cDAG}. Like \texttt{Xconnect()}, this modifies the DAG to send the request through an anonymization service as per system settings.\\
+	\texttt{XgetCIDCustomAnonymizer(sock, cDAG, pDAG)} & Like \texttt{XconnectCustomAnonymizer()} but for content requests.\\
+	\texttt{XgetCIDWithoutAnonymizer(sock, cDAG)} & Like \texttt{XconnectWithoutAnonymizer()} but for content requests.\\
+	\hline
+	\end{tabular}
+	\caption{New or modified XSocket API calls and their descriptions.}
+	\label{table:api-extension}
+\end{table}
+
+
+\subsection{For Users: Control and Visibility}
+\label{control}
+
 
 \section{Conclusion}
 \label{conclusion}
+
 
 \bibliography{FinalWriteup}{}
 \bibliographystyle{plain}
