@@ -98,10 +98,48 @@ We adopt terminology proposed by Pfitzmann and K\"{o}hntopp~\cite{terminology} t
 
 \section{Approach}
 \label{approach}
+
 \subsection{Proxies}
 Nico
-\subsection{Temporary SIDs}
-David
+
+\subsection{Temporary Source Addresses}
+A conceptually simpler approach to achieving anonymity is to use a temporary source address that is unsinkable to you. In today's IP Internet there isn't really a good way to do this. If IP addresses are statically assigned, periodically changing your address is a hassle and may require the involvement of your network administrator, who is unlikely to be willing to assign you a new address every time you want a new identity. Even if addresses are assigned dynamically and you obtain a new one from a DHCP server as often as you'd like, this solution still has major drawbacks. First, most users won't be able to do this from home. A user with a typical home Wi-Fi network can change his computer's IP address to his heart's content, but as his packets pass through his router's NAT, the source address will be overwritten with the public IP assigned to him by his ISP. Further limiting the utility of this approach, your IP address is the source of all traffic you send from your machine, regardless of the application; in some cases, you might want messages from one application to be unlinkable to messages sent by another.
+
+Fortunately, XIA makes the use of temporary source addresses much more feasible. First, consider what normally happens when an XIA application initiates communication with some remote entity. When a host first connects to the network, it contacts a DHCP-like server in its local AD and registers its host ID. Then, when the application opens a socket the operating system will assign the socket an ephemeral service ID (akin to ephemeral ports today). Any packets sent through this socket are given a source address formed form the combination of the host's HID and this ephemeral SID:
+\begin{center}
+\begin{tikzpicture}
+  \entrynode{A}
+  \Vertex[x=1.5,y=0,L=AD]{B}
+  \Vertex[x=3,y=0,L=HID]{C}
+  \Vertex[x=4.5,y=0,L=SID]{D}
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(A)(B)
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(B)(C)
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(C)(D)
+\end{tikzpicture}
+\end{center}
+Now, suppose we want to use a temporary source address to achieve anonymity. Upon creating the socket, the operating system generates an ephemeral SID, as before, only now it takes the additional step of registering it with the local AD as if it were another host ID via the same mechanism it used to register its actual HID when the machine joined the network. Now packets can be sent with this source address:
+\begin{center}
+\begin{tikzpicture}
+  \entrynode{A}
+  \Vertex[x=1.5,y=0,L=AD]{B}
+  \Vertex[x=3,y=0,L=SID]{C}
+  \Vertex[x=4.5,y=0,L=SID]{D}
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(A)(B)
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(B)(C)
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(C)(D)
+\end{tikzpicture}
+\end{center}
+Note that we have overcome all of the limitations of the temporary address approach in IP: first, since the operating system can simply generate a new public/private key pair and use it to derive a new SID, there is no need to manually obtain a valid available IP address. Second, as XIA uses 160 bit addresses and is in no danger of running out, there will presumably be no need for NATs, so there is no concern that a router will rewrite our temporary source address and compromise our anonymity. Finally, we no longer have the coarse granularity problem temporary IP addresses posed; each {\em socket} gets its own temporary address.
+
+Of course, this strategy is not entirely without limitations. Clearly, anyone using this technique must trust his or her local AD not to reveal the mapping between machine and temporary ID; this may not always be reasonable. On the other hand, this can be looked at as a feature rather than a bug. If an AD maintains a log the SIDs registered with it, law enforcement agencies could potentially access them with a subpoena if criminal activity is suspected.
+
+
 \subsection{Principal-Based Control}
 David
 
