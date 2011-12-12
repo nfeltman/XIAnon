@@ -5,7 +5,7 @@
 \usepackage{amsfonts}
 \usepackage{stmaryrd}
 \usepackage{hyperref}
-
+\usepackage{fixltx2e}
 \usepackage{tikz}
 \usepackage{tkz-graph}
 \usetikzlibrary{shapes,arrows}
@@ -113,9 +113,41 @@ We adopt terminology proposed by Pfitzmann and K\"{o}hntopp~\cite{terminology} t
 
 \subsection{Proxies}
 \label{proxies}
-Nico
+One simple way for a client to achieve anonymity is to route all traffic through a third party, called a ``proxy."  This proxy forwards all communications in both directions, and generally looks indistinguishable from any other client.  In this way, the proxy is the only agent that needs to know the address of the client.  
 
-{\bf NOTE to Nico}: you should say something about how we're proposing XIA adopt some form of partial DAG encryption, because later I say we talked about it in this section...
+We consider the example of Amy talking to Betsy using Paul as a proxy.  Betsy alone is unable to link the messages with Amy unless Amy's identity is revealed in the messages themselves.  Similarly, an attacker listening to the communication between Paul and Betsy would be unable to infer Amy's identity.  Alternatively, an attaker listening to the communication between Amy and Paul might be able to link those messages with Betsy, since Betsy's address must be communicated from Amy to Paul at some point.  This can easily be thwarted by encryption of Betsy's address.  An attacker listening to both of Paul's communications (or Paul himself) might be able to link those communications to each other by comparing content or timing.  This can be made very difficult by using several layers of proxies and encryption, such that the chance that all of them being compromised becomes low.
+
+To promote maximum orthogonality of features, we decided to describe and implement proxies as an {\em in-network service}, by implementing them in the address DAG.  For instance, the following DAG discribes communication with the end host at SID\textsubscript{E} via the proxy at SID\textsubscript{P}, with proper fallbacks for both.  We go into more detail on the manipulation of these DAGs in section \S\ref{proxy}
+
+\begin{tikzpicture}
+  \entrynode{A}
+  \Vertex[x=6,y=0,L=SID\textsubscript{P}]{B}
+  \Vertex[x=2,y=-1,L=AD\textsubscript{P}]{C}
+  \Vertex[x=4,y=-1,L=HID\textsubscript{P}]{D}
+  \Vertex[x=12,y=0,L=SID\textsubscript{E}]{E}
+  \Vertex[x=8,y=-1,L=AD\textsubscript{E}]{F}
+  \Vertex[x=10,y=-1,L=HID\textsubscript{E}]{G}
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(A)(B)
+  \tikzstyle{EdgeStyle}=[dashed, bend right, ->]
+  \Edge(A)(C)
+  \tikzstyle{EdgeStyle}=[bend left=10, ->]
+  \Edge(C)(B)
+  \tikzstyle{EdgeStyle}=[dashed, ->]
+  \Edge(C)(D)
+  \tikzstyle{EdgeStyle}=[bend right, ->]
+  \Edge(D)(B)
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(B)(E)
+  \tikzstyle{EdgeStyle}=[dashed, bend right, ->]
+  \Edge(B)(F)
+  \tikzstyle{EdgeStyle}=[bend left=10, ->]
+  \Edge(F)(E)
+  \tikzstyle{EdgeStyle}=[dashed, ->]
+  \Edge(F)(G)
+  \tikzstyle{EdgeStyle}=[bend right, ->]
+  \Edge(G)(E)
+\end{tikzpicture}
 
 \subsection{Temporary Source Addresses}
 \label{temp-ids}
@@ -164,7 +196,7 @@ For instance, the presence of a CID makes it clear that a packet's purpose is to
 
 Additionally, as new principal types are added to the network in the future, they may similarly reveal information users would prefer to keep private.
 
-In the current XIA design, the operating system would simply drop any packets making use of a disallowed principal (and optionally alert the user). But if a mechanism for partial DAG encryption were adopted, as discussed in \S\ref{proxies}, the system could rewrite DAGs in a way that conceals the use of a particular principal. For example, consider a content request with the following DAG:
+In the current XIA design, the operating system would simply drop any packets making use of a disallowed principal (and optionally alert the user). But if a mechanism for partial DAG encryption were adopted, as discussed in \S\ref{in-network-services}, the system could rewrite DAGs in a way that conceals the use of a particular principal. For example, consider a content request with the following DAG:
 \begin{center}
 \begin{tikzpicture}
   \entrynode{A}
@@ -245,17 +277,154 @@ Before describing our implementation, we will take a moment to draw comparisons 
 
 \section{Implementation}
 \label{implementation}
-As a proof-of-concept, we implemented a simple proxy service for anonymizing XIA traffic which we refer to as Envoy. Envoy is written in Python and communicates over XIA using the Xsocket interface. In \S\ref{proxy} we describe in detail how we use DAGs to route traffic through Envoy. The process of implementing this service brought to our attention a handful of issues relating to in-network services, which we discuss in \S\ref{in-network-services}.
+We designed a simple proxy service for anonymizing XIA traffic which we refer to as Envoy. Due to limitations of the underlying XIA codebase, we have implemented only a functional equivalent of Envoy which runs on a single machine and does not handle multiple connections at once. Our version of Envoy is written in Python and communicates over XIA using the Xsocket interface. In \S\ref{proxy} we describe in detail how we use DAGs to route traffic through Envoy. The process of implementing this service brought to our attention a handful of issues relating to in-network services, which we discuss in \S\ref{in-network-services}.
 
 In keeping with our goal to bring users and developers into the loop, we also implemented an extension to the Xsocket API aimed at giving application developers easy access to anonymization tools (\S\ref{api}) and a preference pane enabling users to have the final say as to what applications can and cannot do with respect to anonymity (\S\ref{control}).
 
 \subsection{Single Proxy DAG Manipulation}
 \label{proxy}
-Nico
+This version of the protocol assumes that direct communication or authentication between the client and Envoy happens through some other channel.  The client begins by obtaining DAGs for the Envoy service and for the end service.  We will refer to the public addresses of Envoy and the end service as SID\textsubscript{P} and SID\textsubscript{E}. Let the client application be running on a host HID\textsubscript{C} with an ephemeral service identifier SID\textsubscript{A} (for demultiplexing).  It sends the initial packet with the following destination and source addresses (fallback paths omitted):
+
+\begin{center}
+    \begin{tabular}{ | l | l |} \hline
+    	Dst & Src \\ 
+	\begin{tikzpicture}
+	\entrynode{A}
+	\Vertex[x=2,y=0,L=SID\textsubscript{P}]{P}
+	\Vertex[x=4,y=0,L=SID\textsubscript{E}]{E}
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(A)(P)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(P)(E)
+	\end{tikzpicture} &
+	\begin{tikzpicture}
+	\entrynode{B}
+	\Vertex[x=2,y=0,L=AD\textsubscript{C}]{A}
+	\Vertex[x=4,y=0,L=HID\textsubscript{C}]{H}
+	\Vertex[x=6,y=0,L=SID\textsubscript{A}]{S}
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(B)(A)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(A)(H)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(H)(S)
+	\end{tikzpicture}
+    \\ \hline
+    \end{tabular}
+\end{center}
+
+Upon receiving this initial packet, Envoy routes it to a particular machine, henceforth HID\textsubscript{P}, to handle this connection. Since this is the first packet from AD\textsubscript{C}:HID\textsubscript{C}:SID\textsubscript{A}, Envoy creates a new ephemeral service ID, SID\textsubscript{T} and adds this pair to a local table. (Responses from the end service, SID\textsubscript{E}, are sent to Envoy at SID\textsubscript{T}, which looks up the client address corresponding to SID\textsubscript{T} in it's table and forwards the response to the appropriate address.) The machine then forwards the initial packet with the following destination and source addresses:
+
+\begin{center}
+    \begin{tabular}{ | l | l |} \hline
+    	Dst & Src \\ 
+	\begin{tikzpicture}
+	\entrynode{A}
+	\Vertex[x=2,y=0,L=SID\textsubscript{E}]{E}
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(A)(E)
+	\end{tikzpicture} &
+	\begin{tikzpicture}
+	\entrynode{B}
+	\Vertex[x=2,y=0,L=AD\textsubscript{P}]{A}
+	\Vertex[x=4,y=0,L=HID\textsubscript{P}]{H}
+	\Vertex[x=6,y=0,L=SID\textsubscript{T}]{S}
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(B)(A)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(A)(H)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(H)(S)
+	\end{tikzpicture}
+    \\ \hline
+    \end{tabular}
+\end{center}
+
+The end service is not aware that it is being communicated with via a proxy. It chooses a machine, HID\textsubscript{E}, to handle this connection, and responds with the following source and destination addresses:
+
+\begin{center}
+    \begin{tabular}{ | l | l |} \hline
+    	Dst & Src \\
+	\begin{tikzpicture}
+	\entrynode{B}
+	\Vertex[x=2,y=0,L=AD\textsubscript{P}]{A}
+	\Vertex[x=4,y=0,L=HID\textsubscript{P}]{H}
+	\Vertex[x=6,y=0,L=SID\textsubscript{T}]{S}
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(B)(A)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(A)(H)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(H)(S)
+	\end{tikzpicture} &
+	\begin{tikzpicture}
+	\entrynode{B}
+	\Vertex[x=2,y=0,L=AD\textsubscript{E}]{A}
+	\Vertex[x=4,y=0,L=HID\textsubscript{E}]{H}
+	\Vertex[x=6,y=0,L=SID\textsubscript{E}]{S}
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(B)(A)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(A)(H)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(H)(S)
+	\end{tikzpicture}
+    \\ \hline
+    \end{tabular}
+\end{center}
+
+Envoy, in the interest of keeping minimal state, does not remember this bound source address but instead simply sends it back to the client who is responsible for including HID\textsubscript{E} in future packets.
+
+\begin{center}
+    \begin{tabular}{ | l |} \hline
+    	Dst \\ 
+	\begin{tikzpicture}
+	\entrynode{B}
+	\Vertex[x=2,y=0,L=AD\textsubscript{C}]{A}
+	\Vertex[x=4,y=0,L=HID\textsubscript{C}]{H}
+	\Vertex[x=6,y=0,L=SID\textsubscript{A}]{S}
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(B)(A)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(A)(H)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(H)(S)
+	\end{tikzpicture} \\ \hline
+	Src \\ 
+	\begin{tikzpicture}
+	\entrynode{B}
+	\Vertex[x=2,y=0,L=AD\textsubscript{P}]{A}
+	\Vertex[x=4,y=0,L=HID\textsubscript{P}]{H}
+	\Vertex[x=6,y=0,L=SID\textsubscript{P}]{S}
+	\Vertex[x=8,y=0,L=AD\textsubscript{E}]{A2}
+	\Vertex[x=10,y=0,L=HID\textsubscript{E}]{H2}
+	\Vertex[x=12,y=0,L=SID\textsubscript{E}]{S2}
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(B)(A)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(A)(H)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(H)(S)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(S)(A2)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(A2)(H2)
+	\tikzstyle{EdgeStyle}=[->]
+	\Edge(H2)(S2)
+	\end{tikzpicture}
+    \\ \hline
+    \end{tabular}
+\end{center}
+
+The client receives the bound source DAG, sending all future communications to it. Thus, the client continues communicating with the host via the proxy, which swaps references to AD\textsubscript{C}:HID\textsubscript{C}:SID\textsubscript{A} with AD\textsubscript{P}:HID\textsubscript{P}:SID\textsubscript{T}, and the end service thinks it is maintaining a persistent connection with AD\textsubscript{P}:HID\textsubscript{P}:SID\textsubscript{T}.  
 
 \subsection{In-Network Services Issues}
 \label{in-network-services}
-Nico
+In-Network Services (INSs) are a distinct feature of XIA, with no true analog in the current internet.  In the course of implementing our proxy, we learned a few lessons that can be generally applied to all In-Network Services in XIA.
+
+Firstly, the XIA library needs to offer first class support for implementing an INS.  Extensibility is one of the primary design goals of XIA, and INSs will likely be an excellent mcchanism for extending the platform.  This caries with it some crucial design questions, including whether INSs should have their own principal type, whether an INS should be allowed to re-address a packet, and whether a packet can have part of its data reserved for an INS.  
+
+While not answering these question, we will suggest that XIA allow for partial encryption of DAGs.  Specifically, the part of the DAG after an INS needs to be encrypted with the public key of that INS so that messages between a client and a proxy need not publicly reveal the identity of a server.
 
 \subsection{For Developers: XSocket API Extension}
 \label{api}
