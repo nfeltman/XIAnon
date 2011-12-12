@@ -48,7 +48,7 @@
 
 \section{Introduction}
 \label{introduction}
-The desire for anonymous communication in the Internet has made it a much-discussed issue in both technical and non-technical circles. Users have identified several reasons for wanting online anonymity; in \cite{ruogu}, interviews revealed motivations ranging from protecting personal safety to hiding political activity from governments to unknown fears. In one shocking interview from this study, a Romanian woman describes being abducted after posting personal information about herself on a Web site.
+The desire for anonymous communication in the Internet has made it a much-discussed issue in both technical and non-technical circles. Users have identified several reasons for wanting online anonymity; in \cite{user-study}, interviews revealed motivations ranging from protecting personal safety to hiding political activity from governments to unknown fears. In one shocking interview from this study, a Romanian woman describes being abducted after posting personal information about herself on a Web site.
 
 Several standard approaches to anonymity have emerged, normally involving some number of explicitly identified proxies (e.g., Tor). Although none of these methods are perfect, they generally meet most users' needs from a technical standpoint. Where many fall short, however, is in making these systems easy to understand and configure for non-technical users; part of our project addresses this issue.
 
@@ -245,8 +245,34 @@ These new and modified functions allow developers to specify how they want to ac
 \end{table}
 
 
-\subsection{For Users: Control and Visibility}
+\subsection{For Users: Control and Transparency}
 \label{control}
+Making developers' lives easier is only half the story \textemdash~good software is only as good as its user interface. Even the most sophisticated mechanism for anonymous communication is useless if users don't understand or trust it. As anonymity is becoming a first-class concert to users \cite{user-study}, we propose that operating system vendors build support for various forms of anonymous network communication into their systems, as well as easily understood controls. Although the ideas in this section aren't necessarily specific to XIA, re-architecting the Internet is a pretty good time to find out what users want and build it into the new architecture; thus, we think this work is still valuable to XIA.
+
+We implemented a sample ``System Privacy Settings" preferences pane, shown in Figure~\ref{fig:settings}. It gives users control over the anonymity methods in \S\ref{approach}, all of which except ``Temporary IDs" are implemented. The OS configures the behavior of the socket layer to conform to the user's choices (see Figure~\ref{fig:socket-control}).
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{images/privacy-settings.png}
+\caption{A preference pane lets the user tell the OS how to anonymize network traffic.}
+\label{fig:settings}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{images/socket-control.png}
+\caption{System-wide controls affect the behavior of the socket layer, bypassing applications entirely, allowing users to ensure all traffic is sent as per their anonymization settings.}
+\label{fig:socket-control}
+\end{figure}
+
+But control alone is not enough. Once users have customized the behavior of their systems, they would like a way to verify that their systems are acting on their preferences. To this end, our prototype includes a chart (Figure~\ref{fig:feedback}) which displays to the user counts of three different classes of packets: packets sent through the anonymizer specified in the system preference pane (i.e., packets sent from \texttt{XgetCID()} or from connections established with \texttt{Xconnect()}), packets sent through a different, application-specified anonymizer (\texttt{XgetCIDCustomAnonymizer()} or \texttt{XconnectCustomAnonymizer()}), and packets sent through no anonymizer at all (\texttt{XgetCIDWithoutAnonymizer()} or \texttt{XconnectWithoutAnonymizer()}). Though our interface is simplistic and unpolished, it serves to emphasize the need for system transparency.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.5]{images/feedback.png}
+\caption{An example of feedback the operating system might give a user.}
+\label{fig:feedback}
+\end{figure}
 
 
 \section{Conclusion}
