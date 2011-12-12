@@ -118,6 +118,7 @@ Nico
 {\bf NOTE to Nico}: you should say something about how we're proposing XIA adopt some form of partial DAG encryption, because later I say we talked about it in this section...
 
 \subsection{Temporary Source Addresses}
+\label{temp-ids}
 A conceptually simpler approach to achieving anonymity is to use a temporary source address that is unsinkable to you. In today's IP Internet there isn't really a good way to do this. If IP addresses are statically assigned, periodically changing your address is a hassle and may require the involvement of your network administrator, who is unlikely to be willing to assign you a new address every time you want a new identity. Even if addresses are assigned dynamically and you obtain a new one from a DHCP server as often as you'd like, this solution still has major drawbacks. First, most users won't be able to do this from home. A user with a typical home Wi-Fi network can change his computer's IP address to his heart's content, but as his packets pass through his router's NAT, the source address will be overwritten with the public IP assigned to him by his ISP. Further limiting the utility of this approach, your IP address is the source of all traffic you send from your machine, regardless of the application; in some cases, you might want messages from one application to be unlinkable to messages sent by another.
 
 Fortunately, XIA makes the use of temporary source addresses much more feasible. First, consider what normally happens when an XIA application initiates communication with some remote entity. When a host first connects to the network, it contacts a DHCP-like server in its local AD and registers its host ID. Then, when the application opens a socket the operating system will assign the socket an ephemeral service ID (akin to ephemeral ports today). Any packets sent through this socket are given a source address formed form the combination of the host's HID and this ephemeral SID:
@@ -156,6 +157,7 @@ Of course, this strategy is not entirely without limitations. Clearly, anyone us
 
 
 \subsection{Principal-Based Traffic Control}
+\label{principal-filtering}
 A novel approach possible only in XIA is principal-based traffic control. Broadly speaking, a user may to prevent applications from sending packets that are addressed using certain principal types, as the use of a particular principal reveals something about the communication.
 
 For instance, the presence of a CID makes it clear that a packet's purpose is to retrieve a piece of content. Furthermore, it is conceivable that someone might implement a ``reverse lookup" service that does the opposite of the naming service: translates XIDs back into human-readable names. Thus, anyone sniffing our privacy-seeking users's traffic who sees a content request can find out the name of the content from the CID.
@@ -203,8 +205,42 @@ Rather than dropping this packet, the DAG could instead be rewritten as follows,
 
 \section{Comparison}
 \label{comparison}
-\subsection{Services vs. Features}
-\subsection{Threats vs. ``Meatures''}
+Before describing our implementation, we will take a moment to draw comparisons among the approaches described above in terms of the threats against which they protect, as well as compare each method to itself in terms of its implementation and utility in today's IP Internet and XIA... SAY MORE HERE?
+
+\subsection{Approaches vs. Threats}
+\begin{center}
+	\begin{tabular}{p{2cm} || p{2.5cm} | p{2.5cm} | p{2.5cm} | p{2.5cm} | p{2.5cm}}
+	& \textbf{Other Party (e.g., a company)} &	\textbf{Small 3rd Party (e.g., identity thieves)} & \textbf{Large 3rd party (e.g., a government)} & \textbf{ISP} & \textbf{Facebook Friends}\\
+	\hline
+	\hline
+	{\bf Proxy-based service} (e.g., Tor)&&&&\\
+	\hline
+	{\bf Temporary source ID} &&&&\\
+	\hline
+	{\bf Principal type filtering} &&&&\\
+	\hline
+	{\bf Real life pseudonym} &&&&\\
+	\hline
+	\end{tabular}
+\end{center}
+
+
+\subsection{XIA vs. IP}
+\begin{center}
+	\begin{tabular}{p{3cm} || p{4.5cm} | p{4.5cm}}
+	& \textbf{XIA} 	&	\textbf{IP}\\
+	\hline
+	\hline
+	{\bf Proxy-based service} (e.g., Tor) & Elegantly implemented with DAGs (\S\ref{proxies}) & Packets for final destination are encapsulated in packets to the proxy\\
+	\hline
+	{\bf Temporary source ID} & Generate new SID and register with local AD via HID registration mechanism (\S\ref{temp-ids}) & Request to be assigned a new IP address from DHCP server or network administrator\\
+	& & \\
+	& Per-socket granularity & Per-host granularity\\
+	\hline
+	{\bf Principal type filtering} & Fine grained traffic control (\S\ref{principal-filtering})& N/A \\
+	\hline
+	\end{tabular}
+\end{center}
 
 
 \section{Implementation}
