@@ -115,10 +115,10 @@ We adopt terminology proposed by Pfitzmann and K\"{o}hntopp~\cite{terminology} t
 \label{proxies}
 One simple way for a client to achieve anonymity is to route all traffic through a third party, called a ``proxy."  This proxy forwards all communications in both directions, and generally looks indistinguishable from any other client.  In this way, the proxy is the only agent that needs to know the address of the client.  
 
-We consider the example of Amy talking to Betsy using Paul as a proxy.  Betsy alone is unable to link the messages with Amy unless Amy's identity is revealed in the messages themselves.  Similarly, an attacker listening to the communication between Paul and Betsy would be unable to infer Amy's identity.  Alternatively, an attaker listening to the communication between Amy and Paul might be able to link those messages with Betsy, since Betsy's address must be communicated from Amy to Paul at some point.  This can easily be thwarted by encryption of Betsy's address.  An attacker listening to both of Paul's communications (or Paul himself) might be able to link those communications to each other by comparing content or timing.  This can be made very difficult by using several layers of proxies and encryption, such that the chance that all of them being compromised becomes low.
+We consider the example of Amy talking to Betsy using Paul as a proxy.  Betsy alone is unable to link the messages with Amy unless Amy's identity is revealed in the messages themselves.  Similarly, an attacker listening to the communication between Paul and Betsy would be unable to infer Amy's identity.  Alternatively, an attaker listening to the communication between Amy and Paul might be able to link those messages with Betsy, since Betsy's address must be communicated from Amy to Paul at some point.  This can easily be thwarted by encryption of Betsy's address.  An attacker listening to both of Paul's communications (or Paul himself) might be able to link those communications to each other by comparing content or timing.  This can be made very difficult by using several layers of proxies and encryption, such that the chance that all of them are compromised becomes low (\cite{onion}).
 
-To promote maximum orthogonality of features, we decided to describe and implement proxies as an {\em in-network service}, by implementing them in the address DAG.  For instance, the following DAG discribes communication with the end host at SID\textsubscript{E} via the proxy at SID\textsubscript{P}, with proper fallbacks for both.  We go into more detail on the manipulation of these DAGs in section \S\ref{proxy}
-
+To promote maximum orthogonality of features, we decided to describe and implement proxies as an {\em in-network service}, by specifying the desire to send traffic through the proxy in the address DAG of the original packet, rather than encapsulating the packet inside another one addressed only to the proxy.  For instance, the following DAG discribes communication with the end host at SID\textsubscript{E} via the proxy at SID\textsubscript{P}, with proper fallbacks for both.  We go into more detail on the manipulation of these DAGs in \S\ref{proxy}
+\begin{center}
 \begin{tikzpicture}
   \entrynode{A}
   \Vertex[x=6,y=0,L=SID\textsubscript{P}]{B}
@@ -148,6 +148,7 @@ To promote maximum orthogonality of features, we decided to describe and impleme
   \tikzstyle{EdgeStyle}=[bend right, ->]
   \Edge(G)(E)
 \end{tikzpicture}
+\end{center}
 
 \subsection{Temporary Source Addresses}
 \label{temp-ids}
@@ -418,13 +419,13 @@ Envoy, in the interest of keeping minimal state, does not remember this bound so
 
 The client receives the bound source DAG, sending all future communications to it. Thus, the client continues communicating with the host via the proxy, which swaps references to AD\textsubscript{C}:HID\textsubscript{C}:SID\textsubscript{A} with AD\textsubscript{P}:HID\textsubscript{P}:SID\textsubscript{T}, and the end service thinks it is maintaining a persistent connection with AD\textsubscript{P}:HID\textsubscript{P}:SID\textsubscript{T}.  
 
-\subsection{In-Network Services Issues}
+\subsection{Issues Related to In-Network Services}
 \label{in-network-services}
-In-Network Services (INSs) are a distinct feature of XIA, with no true analog in the current internet.  In the course of implementing our proxy, we learned a few lessons that can be generally applied to all In-Network Services in XIA.
+In-Network Services (INSs) are handled poorly in the current Internet (they are primarily implemented as transparent middle-boxes that violate the end-to-end principle). A distinctive feature of XIA is its potential to resolve many of the issues present today through its flexible DAG-based addresses and intrinsically secure IDs. In the course of implementing our proxy, we learned a few lessons that can be generally applied to all INSs in XIA.
 
 Firstly, the XIA library needs to offer first class support for implementing an INS.  Extensibility is one of the primary design goals of XIA, and INSs will likely be an excellent mcchanism for extending the platform.  This caries with it some crucial design questions, including whether INSs should have their own principal type, whether an INS should be allowed to re-address a packet, and whether a packet can have part of its data reserved for an INS.  
 
-While not answering these question, we will suggest that XIA allow for partial encryption of DAGs.  Specifically, the part of the DAG after an INS needs to be encrypted with the public key of that INS so that messages between a client and a proxy need not publicly reveal the identity of a server.
+While not answering these question, we will suggest that XIA allow for partial encryption of DAGs.  Specifically, the part of the DAG after an INS needs to be encrypted with the public key of that INS so that messages between a client and a proxy do not publicly reveal the identity of the final destination.
 
 \subsection{For Developers: XSocket API Extension}
 \label{api}
