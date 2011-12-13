@@ -54,6 +54,8 @@ Several standard approaches to anonymity have emerged, normally involving some n
 
 Our goals are three-fold. First, we consider existing methods for achieving anonymous communication in the context of the eXpressive Internet Architecture (XIA)~\cite{xia}. The question we ask ourselves is: Does XIA {\em break} anything? Second, we explore a more interesting question: Does XIA {\em add} anything? As we discuss below, novel features of XIA in many cases allow these existing techniques to be implemented more elegantly and in some cases enable entirely new approaches. Finally, we bring users and developers into the loop. We introduce an extension to the XIA socket API, which provides application developers a dead-easy way to use anonymous communication over XIA. Then, we create a preference pane providing OS level control over the extended API functionality. Anonymization settings are controllable by the user through an intuitive, easily understood GUI.
 
+At a higher level, the main contribution of this project is to guide the development of XIA by exploring its capability to respond to user and developer needs (in this case, with respect to anonymity).
+
 The rest of this paper is organized as follows: in Section~\ref{background} we introduce pertinent features of XIA and review common terminology related to anonymity from the literature. Section~\ref{approach} examines the use of existing approaches in XIA as well as new ones made possible novel features of the architecture. In Section~\ref{comparison} we compare these approaches to one another in terms of the threats against which they provide protection and we compare the ``current" version of each method to its XIA counterpart. Finally, Section~\ref{implementation} presents our implementation and in Section~\ref{conclusion} we summarize and conclude.
 
 
@@ -152,7 +154,7 @@ To promote maximum orthogonality of features, we decided to describe and impleme
 
 \subsection{Temporary Source Addresses}
 \label{temp-ids}
-A conceptually simpler approach to achieving anonymity is to use a temporary source address that is unsinkable to you. In today's IP Internet there isn't really a good way to do this. If IP addresses are statically assigned, periodically changing your address is a hassle and may require the involvement of your network administrator, who is unlikely to be willing to assign you a new address every time you want a new identity. Even if addresses are assigned dynamically and you obtain a new one from a DHCP server as often as you'd like, this solution still has major drawbacks. First, most users won't be able to do this from home. A user with a typical home Wi-Fi network can change his computer's IP address to his heart's content, but as his packets pass through his router's NAT, the source address will be overwritten with the public IP assigned to him by his ISP. Further limiting the utility of this approach, your IP address is the source of all traffic you send from your machine, regardless of the application; in some cases, you might want messages from one application to be unlinkable to messages sent by another.
+A conceptually simpler approach to achieving anonymity is to use a temporary source address that is unlinkable to you. In today's IP Internet there isn't really a good way to do this. If IP addresses are statically assigned, periodically changing your address is a hassle and may require the involvement of your network administrator, who is unlikely to be willing to assign you a new address every time you want a new identity. Even if addresses are assigned dynamically and you obtain a new one from a DHCP server as often as you'd like, this solution still has major drawbacks. First, most users won't be able to do this from home. A user with a typical home Wi-Fi network can change his computer's IP address to his heart's content, but as his packets pass through his router's NAT, the source address will be overwritten with the public IP assigned to him by his ISP. Further limiting the utility of this approach, your IP address is the source of all traffic you send from your machine, regardless of the application; in some cases, you might want messages from one application to be unlinkable to messages sent by another.
 
 Fortunately, XIA makes the use of temporary source addresses much more feasible. First, consider what normally happens when an XIA application initiates communication with some remote entity. When a host first connects to the network, it contacts a DHCP-like server in its local AD and registers its host ID. Then, when the application opens a socket the operating system will assign the socket an ephemeral service ID (akin to ephemeral ports today). Any packets sent through this socket are given a source address formed form the combination of the host's HID and this ephemeral SID:
 \begin{center}
@@ -235,21 +237,23 @@ Rather than dropping this packet, the DAG could instead be rewritten as follows,
 
 \section{Comparison}
 \label{comparison}
-Before describing our implementation, we will take a moment to draw comparisons among the approaches described above in terms of the threats against which they protect, as well as compare each method to itself in terms of its implementation and utility in today's IP Internet and XIA... SAY MORE HERE?
+Before describing our implementation, we will take a moment to draw comparisons among the approaches described above in terms of the threats against which they protect, as well as compare how well XIA and the current Internet support these approaches.
 
 \subsection{Approaches vs. Threats}
+On the left we list four basic approaches to anonymity. We consider how effective each is at concealing a user's identity from five entities identified in user studies \cite{user-study}. In general, we assume that the user encrypts message payloads with the recipient's public key and that the XID of the final recipient is encrypted when using proxy-based services.
+
 \begin{center}
 	\begin{tabular}{p{2cm} || p{2.5cm} | p{2.5cm} | p{2.5cm} | p{2.5cm} | p{2.5cm}}
-	& \textbf{Other Party (e.g., a company)} &	\textbf{Small 3rd Party (e.g., identity thieves)} & \textbf{Large 3rd party (e.g., a government)} & \textbf{ISP} & \textbf{Facebook Friends}\\
+	& \textbf{Recipient} (e.g., a company) &	\textbf{Small 3rd Party} (e.g., identity thieves) & \textbf{Large 3rd party} (e.g., a government) & \textbf{ISP} & \textbf{Facebook Friends}\\
 	\hline
 	\hline
-	{\bf Proxy-based service} (e.g., Tor)&&&&\\
+	{\bf Proxy-based service} (e.g., single proxy, Tor)&{\em Sender anonymity}: sender's machine unlinkable to its messages&{\em Recipient anonymity} pre-proxy; {\em Sender anonymity} post-proxy&Timing attacks can compromise anonymity if attacker can observe traffic both pre- and post-proxy&{\em Recipient anonymity}: sender's messages unlinkable to the recipient&{\em No protection} if users uses real name at the application level\\
 	\hline
-	{\bf Temporary source ID} &&&&\\
+	{\bf Temporary source ID} &{\em Sender anonymity}: sender's machine unlinkable to its messages&{\em Sender anonymity} if the 3rd party doesn't have access to sender's AD's routing state&{\em Sender anonymity} if the 3rd party doesn't have access to sender's AD's routing state&{\em No protection:} Temporary IDs are registered with the ISP&{\em No protection} if users uses real name at the application level\\
 	\hline
-	{\bf Principal type filtering} &&&&\\
+	{\bf Principal type filtering} &{\em No protection} for packets allowed through the filter&{\em No protection} for packets allowed through the filter&{\em No protection} for packets allowed through the filter&{\em No protection} for packets allowed through the filter&{\em No protection} for packets allowed through the filter\\
 	\hline
-	{\bf Real life pseudonym} &&&&\\
+	{\bf Real life pseudonym} &{\em No protection:} Sender's machine linkable to its messages&{\em No protection:} Sender's machine linkable to its messages&{\em No protection:} Sender's machine linkable to its messages&{\em No protection:} Sender's machine linkable to its messages&{\em Application-level protection}\\
 	\hline
 	\end{tabular}
 \end{center}
@@ -261,13 +265,15 @@ Before describing our implementation, we will take a moment to draw comparisons 
 	& \textbf{XIA} 	&	\textbf{IP}\\
 	\hline
 	\hline
-	{\bf Proxy-based service} (e.g., Tor) & Elegantly implemented with DAGs (\S\ref{proxies}) & Packets for final destination are encapsulated in packets to the proxy\\
+	{\bf Proxy-based service} (e.g., single proxy, Tor) & Elegantly implemented with DAGs (\S\ref{proxies}) & Packets for final destination are encapsulated in packets to the proxy (packets are ``tunneled" through proxy)\\
 	\hline
 	{\bf Temporary source ID} & Generate new SID and register with local AD via HID registration mechanism (\S\ref{temp-ids}) & Request to be assigned a new IP address from DHCP server or network administrator\\
 	& & \\
 	& Per-socket granularity & Per-host granularity\\
 	\hline
-	{\bf Principal type filtering} & Fine grained traffic control (\S\ref{principal-filtering})& N/A \\
+	{\bf Principal type filtering} & Fine grained traffic control (\S\ref{principal-filtering})& No support \\
+	\hline
+	{\bf Real life pseudonym} & Unaffected by Internet architecture & Unaffected by Internet architecture \\
 	\hline
 	\end{tabular}
 \end{center}
@@ -428,6 +434,39 @@ Another as yet unaddressed issue is that of DAG ``permissions." That is, who is 
 
 Finally, we suggest that XIA allow for partial encryption of DAGs.  In the case of an anonymizing proxy, the part of the DAG after the proxy needs to be encrypted with the proxy's public key so that messages between a client and a proxy do not publicly reveal the identity of the final destination.
 
+\begin{center}
+\begin{tikzpicture}
+  \entrynode{A}
+  \Vertex[x=6,y=0,L=SID\textsubscript{P}]{B}
+  \Vertex[x=2,y=-1,L=AD\textsubscript{P}]{C}
+  \Vertex[x=4,y=-1,L=HID\textsubscript{P}]{D}
+  \encryptednode{x=12,y=0,L=SID\textsubscript{E}}{E}
+  \encryptednode{x=8,y=-1,L=AD\textsubscript{E}}{F}
+  \encryptednode{x=10,y=-1,L=HID\textsubscript{E}}{G}
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(A)(B)
+  \tikzstyle{EdgeStyle}=[dashed, bend right, ->]
+  \Edge(A)(C)
+  \tikzstyle{EdgeStyle}=[bend left=10, ->]
+  \Edge(C)(B)
+  \tikzstyle{EdgeStyle}=[dashed, ->]
+  \Edge(C)(D)
+  \tikzstyle{EdgeStyle}=[bend right, ->]
+  \Edge(D)(B)
+  \tikzstyle{EdgeStyle}=[->]
+  \Edge(B)(E)
+  \tikzstyle{EdgeStyle}=[dashed, bend right, ->]
+  \Edge(B)(F)
+  \tikzstyle{EdgeStyle}=[bend left=10, ->]
+  \Edge(F)(E)
+  \tikzstyle{EdgeStyle}=[dashed, ->]
+  \Edge(F)(G)
+  \tikzstyle{EdgeStyle}=[bend right, ->]
+  \Edge(G)(E)
+\end{tikzpicture}
+\end{center}
+
+
 \subsection{For Developers: XSocket API Extension}
 \label{api}
 The XSocket API, as the name suggests, allows developers to communicate with sockets over XIA, much like network applications today use the BSD socket API. We extended this functionality to include support for some of the anonymity methods we have described by implementing a thin layer over the XSocket API (using Python for quick prototyping).
@@ -460,14 +499,14 @@ We implemented a sample ``System Privacy Settings" preferences pane, shown in Fi
 
 \begin{figure}
 \centering
-\includegraphics[scale=0.75]{images/privacy-settings.png}
+\includegraphics[scale=0.5]{images/privacy-settings.png}
 \caption{A preference pane lets the user tell the OS how to anonymize network traffic.}
 \label{fig:settings}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[scale=0.75]{images/socket-control.png}
+\includegraphics[scale=0.5]{images/socket-control.png}
 \caption{System-wide controls affect the behavior of the socket layer, bypassing applications entirely, allowing users to ensure all traffic is sent as per their anonymization settings.}
 \label{fig:socket-control}
 \end{figure}
@@ -476,7 +515,7 @@ But control alone is not enough. Once users have customized the behavior of thei
 
 \begin{figure}
 \centering
-\includegraphics[scale=0.5]{images/feedback.png}
+\includegraphics[scale=0.3]{images/feedback.png}
 \caption{An example of feedback the operating system might give a user.}
 \label{fig:feedback}
 \end{figure}
@@ -485,6 +524,8 @@ But control alone is not enough. Once users have customized the behavior of thei
 \section{Conclusion}
 \label{conclusion}
 Anonymity in the Internet is sought by many people for many reasons. We consider the place of anonymity in XIA, with an eye toward verifying that XIA doesn't mix badly with existing approaches and exploring new approaches enabled by XIA. Further, we propose an extension to the XSocket API allowing developers easy access to standard implementations  of these approaches. We also discuss the desirability of an operating system preference pane empowering users to control system-wide traffic anonymity settings.
+
+We conclude that not only do existing anonymity mechanisms continue to work in XIA, but in many cases can be made simpler or more elegant, largely due to the flexibility of DAG-based addressing. XIA also creates new categories of mechanisms, a prime example being XIA's notion of principals allowing for techniques like principal-based traffic filtering.
 
 Our implementation of the extended socket API, the preference pane, and a simple proxy serve to demonstrate the feasibility of proxies as in-network services, act as a basis for future user studies, and uncover new issues relating to anonymity and in-network services in XIA.
 
