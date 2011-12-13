@@ -52,7 +52,7 @@ The desire for anonymous communication in the Internet has made it a much-discus
 
 Several standard approaches to anonymity have emerged, normally involving some number of explicitly identified proxies (e.g., Tor). Although none of these methods are perfect, they generally meet most users' needs from a technical standpoint. Where many fall short, however, is in making these systems easy to understand and configure for non-technical users; part of our project addresses this issue.
 
-Our goal is three-fold. First, we consider existing methods for achieving anonymous communication in the context of the eXpressive Internet Architecture (XIA)~\cite{xia}. The question we ask ourselves is: Does XIA {\em break} anything? Second, we explore a more interesting question: Does XIA {\em add} anything? As we discuss below, novel features of XIA in many cases allow these existing techniques to be implemented more elegantly and in some cases enable entirely new approaches. Finally, we bring users and developers into the loop. We introduce an extension to the XIA socket API, which provides application developers a dead-easy way to use anonymous communication over XIA. Then, we create a preference pane providing OS level control over the extended API functionality. Anonymization settings are controllable by the user through an intuitive, easily understood GUI.
+Our goals are three-fold. First, we consider existing methods for achieving anonymous communication in the context of the eXpressive Internet Architecture (XIA)~\cite{xia}. The question we ask ourselves is: Does XIA {\em break} anything? Second, we explore a more interesting question: Does XIA {\em add} anything? As we discuss below, novel features of XIA in many cases allow these existing techniques to be implemented more elegantly and in some cases enable entirely new approaches. Finally, we bring users and developers into the loop. We introduce an extension to the XIA socket API, which provides application developers a dead-easy way to use anonymous communication over XIA. Then, we create a preference pane providing OS level control over the extended API functionality. Anonymization settings are controllable by the user through an intuitive, easily understood GUI.
 
 The rest of this paper is organized as follows: in Section~\ref{background} we introduce pertinent features of XIA and review common terminology related to anonymity from the literature. Section~\ref{approach} examines the use of existing approaches in XIA as well as new ones made possible novel features of the architecture. In Section~\ref{comparison} we compare these approaches to one another in terms of the threats against which they provide protection and we compare the ``current" version of each method to its XIA counterpart. Finally, Section~\ref{implementation} presents our implementation and in Section~\ref{conclusion} we summarize and conclude.
 
@@ -60,6 +60,16 @@ The rest of this paper is organized as follows: in Section~\ref{background} we i
 \section{Background}
 \label{background}
 Before we discuss anonymity in XIA, we will first discuss XIA itself to highlight the features we will make use of later. Then, we will bring some precision to the term ``anonymity" by presenting a review of the terminology used in previous work.
+
+\subsection{Anonymity}
+We adopt terminology proposed by Pfitzmann and K\"{o}hntopp~\cite{terminology} to precisely describe various meanings of the term {\em anonymity}:
+\begin{description}
+\item[Anonymity] The state of not being identifiable within a set of subjects, the {\em anonymity set}.
+\item[Unlinkability] Two or more items (e.g., subjects, messages, events, actions, etc.) are no more and no less related than they are related to any other item.
+\item[Sender Anonymity] A particular message is not linkable to any sender and no message is linkable to a particular sender.
+\item[Recipient Anonymity] A particular message cannot be linked to any recipient and no message is linkable to a particular recipient.
+\item[Unobservability] The state of messages being indistinguishable from no messages at all.
+\end{description}
 
 \subsection{XIA}
 Some features of XIA have implications when it comes to anonymity. We briefly describe the key ideas here and elaborate on their impact on anonymous communication later.
@@ -96,16 +106,6 @@ Addresses in XIA are represented as DAGs (directed acyclic graphs). Using DAGs a
 
 \subsubsection{Intrinsic Security}
 All addresses (or, better put, identifiers) in XIA are \emph{intrinsically secure}; exactly what this means varies among principals. For example, a content identifier (CID) is the cryptographic hash of the content itself, enabling anyone receiving the content to verify its integrity. Hosts and services are required to have a public/private key pair; therefore their corresponding identifiers (HIDs and SIDs) are simply the hashes of public keys. A host can sign any communication it generates with its private key and anyone can publicly verify the signature using the host's ID.
-
-\subsection{Anonymity}
-We adopt terminology proposed by Pfitzmann and K\"{o}hntopp~\cite{terminology} to precisely describe various meanings of the term {\em anonymity}:
-\begin{description}
-\item[Anonymity] The state of not being identifiable within a set of subjects, the {\em anonymity set}.
-\item[Unlinkability] Two or more items (e.g., subjects, messages, events, actions, etc.) are no more and no less related than they are related to any other item.
-\item[Sender Anonymity] A particular message is not linkable to any sender and no message is linkable to a particular sender.
-\item[Recipient Anonymity] A particular message cannot be linked to any recipient and no message is linkable to a particular recipient.
-\item[Unobservability] The state of messages being indistinguishable from no messages at all.
-\end{description}
 
 
 \section{Approach}
@@ -175,18 +175,15 @@ Now, suppose we want to use a temporary source address to achieve anonymity. Upo
   \entrynode{A}
   \Vertex[x=1.5,y=0,L=AD]{B}
   \Vertex[x=3,y=0,L=SID]{C}
-  \Vertex[x=4.5,y=0,L=SID]{D}
   \tikzstyle{EdgeStyle}=[->]
   \Edge(A)(B)
   \tikzstyle{EdgeStyle}=[->]
   \Edge(B)(C)
-  \tikzstyle{EdgeStyle}=[->]
-  \Edge(C)(D)
 \end{tikzpicture}
 \end{center}
 Note that we have overcome all of the limitations of the temporary address approach in IP: first, since the operating system can simply generate a new public/private key pair and use it to derive a new SID, there is no need to manually obtain a valid available IP address. Second, as XIA uses 160 bit addresses and is in no danger of running out, there will presumably be no need for NATs, so there is no concern that a router will rewrite our temporary source address and compromise our anonymity. Finally, we no longer have the coarse granularity problem temporary IP addresses posed; each {\em socket} gets its own temporary address.
 
-Of course, this strategy is not entirely without limitations. Clearly, anyone using this technique must trust his or her local AD not to reveal the mapping between machine and temporary ID; this may not always be reasonable. On the other hand, this can be looked at as a feature rather than a bug. If an AD maintains a log the SIDs registered with it, law enforcement agencies could potentially access them with a subpoena if criminal activity is suspected.
+Of course, this strategy is not entirely without limitations. Clearly, anyone using this technique must trust his or her local AD not to reveal the mapping between machine and temporary ID; this may not always be reasonable. On the other hand, this can be looked at as a feature rather than a bug. If an AD maintains a log the SIDs registered with it, law enforcement agencies could potentially access them with a subpoena if criminal activity is suspected. Another limitation, but one that is probably reasonable in most cases, is that traffic anonymized in this manner is not entirely anonymous, but rather linked to you at the AD level. Note that the situation is no better in IP: a temporary IP address still identifies you at the level of your subnet.
 
 
 \subsection{Principal-Based Traffic Control}
@@ -423,7 +420,7 @@ The client receives the bound source DAG, sending all future communications to i
 \label{in-network-services}
 In-Network Services (INSs) are handled poorly in the current Internet (they are primarily implemented as transparent middle-boxes that violate the end-to-end principle). A distinctive feature of XIA is its potential to resolve many of the issues present today through its flexible DAG-based addresses and intrinsically secure IDs. In the course of implementing our proxy, we uncovered a few issues that can be generally applied to all INSs in XIA.
 
-Firstly, as we hope that INSs will become a distinctive feature of XIA, the XIA library needs to offer first class support for implementing them. This will involve, as a first step, expanding the XSocket API; to see how this might be useful, consider this illustrative example: an AD has implemented a firewall as an INS, through which it requires all inbound traffic to pass. (It could enforce this policy by instructing all edge routers to add the firewall to the destination DAG of all inbound packets, if it is not already present.) Currently, however, the firewall application's only option is to receive data via the \texttt{Xrecv()} or the \texttt{Xrecvfrom()} call. This presents a problem: each of these calls only exposes the packet's data and source address to the application, but a firewall will likely want access to the entire packet header. Thus, perhaps the \texttt{Xrecvfrom()} call could be enriched to provide the application with the entire packet heard rather than just the source DAG. 
+Firstly, as we hope that INSs will become a distinctive feature of XIA, the XIA library needs to offer first class support for implementing them. This will involve, as a first step, expanding the XSocket API; to see how this might be useful, consider this illustrative example: an AD has implemented a firewall as an INS, through which it requires all inbound traffic to pass. (It could enforce this policy by instructing all edge routers to add the firewall to the destination DAG of all inbound packets, if it is not already present.) Currently, however, the firewall application's only option is to receive data via the \texttt{Xrecv()} or the \texttt{Xrecvfrom()} call. This presents a problem: each of these calls only exposes the packet's data and source address to the application, but a firewall will likely want access to the entire packet header. Thus, perhaps the \texttt{Xrecvfrom()} call could be enriched to provide the application with the packet header rather than just the source DAG. 
 
 Additionally, when the the application passes the packet back to the socket layer to be forwarded to its final destination, the socket layer must be aware that the packet is not starting at the beginning of the DAG but rather at the INS's node somewhere in the middle and mark the ``current node" pointer in the DAG accordingly.
 
@@ -457,7 +454,7 @@ These new and modified functions allow developers to specify how they want to ac
 
 \subsection{For Users: Control and Transparency}
 \label{control}
-Making developers' lives easier is only half the story \textemdash~good software is only as good as its user interface. Even the most sophisticated mechanism for anonymous communication is useless if users don't understand or trust it. As anonymity is becoming a first-class concert to users \cite{user-study}, we propose that operating system vendors build support for various forms of anonymous network communication into their systems, as well as easily understood controls. Although the ideas in this section aren't necessarily specific to XIA, re-architecting the Internet is a pretty good time to find out what users want and build it into the new architecture; thus, we think this work is still valuable to XIA.
+Making developers' lives easier is only half the story \textemdash~good software is only as good as its user interface. Even the most sophisticated mechanism for anonymous communication is useless if users don't understand or trust it. As anonymity is becoming a first-class concern to users \cite{user-study}, we propose that operating system vendors build support for various forms of anonymous network communication into their systems, as well as easily understood controls. Although the ideas in this section aren't necessarily specific to XIA, re-architecting the Internet is a pretty good time to find out what users want and build it into the new architecture; thus, we think this work is still valuable to XIA.
 
 We implemented a sample ``System Privacy Settings" preferences pane, shown in Figure~\ref{fig:settings}. It gives users control over the anonymity methods in \S\ref{approach}, all of which except ``Temporary IDs" are implemented. The OS configures the behavior of the socket layer to conform to the user's choices (see Figure~\ref{fig:socket-control}).
 
@@ -487,7 +484,9 @@ But control alone is not enough. Once users have customized the behavior of thei
 
 \section{Conclusion}
 \label{conclusion}
+Anonymity in the Internet is sought by many people for many reasons. We consider the place of anonymity in XIA, with an eye toward verifying that XIA doesn't mix badly with existing approaches and exploring new approaches enabled by XIA. Further, we propose an extension to the XSocket API allowing developers easy access to standard implementations  of these approaches. We also discuss the desirability of an operating system preference pane empowering users to control system-wide traffic anonymity settings.
 
+Our implementation of the extended socket API, the preference pane, and a simple proxy serve to demonstrate the feasibility of proxies as in-network services, act as a basis for future user studies, and uncover new issues relating to anonymity and in-network services in XIA.
 
 \bibliography{FinalWriteup}{}
 \bibliographystyle{plain}
