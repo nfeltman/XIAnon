@@ -85,7 +85,7 @@ def put_content():
     for cid in image_cid_list:
         image_cid_list_string += cid
     f = open("simple.html", 'w')
-    f.write('<html><body><h1>It works!</h1>\n<h2><img src="http://xia.cid.%s.%s" /></h2><ul class="left-nav">\n\n</body></html>' % (num_image_chunks, image_cid_list_string))
+    f.write('<html><body><h1>Simple HTML Page</h1>\n<h2>This page was loaded using XIA:<ol><li>An HTTP request packet was sent to the service \'xiaweb\'</li><li>The service responded with the content ID of the requested page, simple.html</li><li>The browser sent a request to retrieve this content</li><li>The retrieved content, simple.html, contained the content ID of the umbrella image, which the browser then rqeusted and received.</li></ol></h2><img src="http://xia.cid.%s.%s" /><ul class="left-nav">\n\n</body></html>' % (num_image_chunks, image_cid_list_string))
 
     # Put content 'simple.html'
     # TODO: Silly to write file then read it again; we do it

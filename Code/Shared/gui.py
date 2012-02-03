@@ -1,8 +1,10 @@
 #! /usr/bin/python
 
 import xanonsocket
+import stats
 from Tkinter import *
 from tkFont import *
+
 
 
 # ***** GLOBAL STUFF ***** #
@@ -55,16 +57,35 @@ def btn_save_click():
     xanonsocket.XSetAnonymizer(change_service_address.get())
     change_service_window.destroy()
 
+def btn_show_stats_click():
+    stats.show_anonymization_counts()
+
 def cbx_use_temp_sids_changed():
     if use_temp_sids.get():
         xanonsocket.XEnableTempSIDs()
     else:
         xanonsocket.XDisableTempSIDs()
 
+def periodic_load_app_exceptions_listbox():
+    load_app_exceptions_listbox()
+    root.after(1000, periodic_load_app_exceptions_listbox)
+
 def load_app_exceptions_listbox():
+    # Save current selection
+    selected_indices = lbx_exceptions.curselection()
+    try:
+        selected_indices = map(int, selected_indices)
+    except:
+        pass
+
+    # Empty and re-populate listbox
     lbx_exceptions.delete(0, END)
     for app in xanonsocket.XGetAnonymizerExceptions():
         lbx_exceptions.insert(END, app)
+
+    # Restore selection
+    for i in selected_indices:
+        lbx_exceptions.select_set(i)
 
 def btn_remove_exception_click():
     indices = lbx_exceptions.curselection()
@@ -169,6 +190,10 @@ btn_remove_exception.grid(row=0, column=0, sticky=E)
 btn_add_exception = Button(frame_add_remove_exception, text="Add", command=btn_add_exception_click)
 btn_add_exception.grid(row=0, column=1, sticky=E)
 
+frame_stats = Frame(frame_anon_service)
+frame_stats.grid(row=4, padx=(33,0), pady=(10,0), sticky=E)
+Button(frame_stats, text="Show Statistics", command=btn_show_stats_click).grid(sticky=E)
+
 
 
 
@@ -259,4 +284,5 @@ else:
 
 action.set(xanonsocket.XGetDisallowedPrincipalAction())
 
+periodic_load_app_exceptions_listbox()
 root.mainloop()

@@ -3,6 +3,7 @@ import time
 import fcntl
 import xsocket
 from xia_address import *
+import dagmanip
 
 def recv_with_timeout(sock, timeout=5):
     # Make socket non-blocking
@@ -48,7 +49,8 @@ def main():
 		if (listen_sock<0):
 			print "error initializing listen socket"
 			return
-		envoy_dag = "RE %s %s %s" % (AD1, HID2, SID_ENVOY)# address of envoy
+		#envoy_dag = "RE %s %s %s" % (AD1, HID2, SID_ENVOY)# address of envoy
+		envoy_dag = "DAG 0 - \n AD:1000000000000000000000000000000000000002 1 - \n HID:0000000000000000000000000000000000000002 2 - \n SID:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		xsocket.Xbind(listen_sock, envoy_dag)
 		print "Envoy: bound to\n%s" % envoy_dag
 		xsocket.Xaccept(listen_sock)
@@ -58,7 +60,7 @@ def main():
 		full_dst = xsocket.Xrecv(listen_sock, 2000, 0)
 		print "full destination is: "+full_dst
 		
-		end_server_addr = DAG_to_string(create_subDAG(parse_DAG(full_dst),'NAME'))
+		end_server_addr = dagmanip.DAG_to_string(dagmanip.create_subDAG(dagmanip.parse_DAG(full_dst),'SID:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
 		request_payload = xsocket.Xrecv(listen_sock, 2000, 0)
 		print "full destination is: "+full_dst
 		print "end server address is: "+end_server_addr
@@ -77,12 +79,16 @@ def main():
 			return
 		
 		# make request to server
+		print 'ENVOY: trying to find last_id'
+		last_id = dagmanip.get_last_princ(dagmanip.parse_DAG(end_server_addr))
+		print 'ENVOY: last ID: %s' % last_id
 		try:
-			last_id = get_last_princ(end_server_addr)
-			if(len(last_id)>=3 and last_id[0:2]=="CID")
+			if(len(last_id)>=3 and last_id[0:2]=="CID"):
+				print 'ENVOY: CID!!!'
 				# xsocket.Xbind(sock, sdag);
 				xsocket.XgetCID(forward_sock, end_server_addr, len(end_server_addr))
-			else
+			else:
+				print 'ENVOY: SID!!!'
 				# xsocket.Xbind(forward_sock, forward_dag)
 				xsocket.Xconnect(forward_sock, end_server_addr)   # TODO: once dagmanip is done, should just be end_server_addr
 				xsocket.Xsend(forward_sock, request_payload, len(request_payload), 0)

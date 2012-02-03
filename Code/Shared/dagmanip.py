@@ -18,6 +18,7 @@ def get_last_princ(dag):
 	return get_last_node(dag).principal
 	
 def parse_DAG(str):
+	print('### Parsing %s' % str)
 	nodes = {}
 	count=-1;
 	for line in str.splitlines():
@@ -65,6 +66,9 @@ def create_subDAG(dag, prin_name):
 	return parse_DAG("DAG"+to_str[first_space:])
 
 def append_dag(dag1, dag2):
+	print '###Appending DAGS!!!'
+	print(DAG_to_string(dag1))
+	print(DAG_to_string(dag2))
 	dag1_sink = get_last_node(dag1)
 	dag1_sink.successors += dag2.root.successors
 	dag1.principal_map = dict(dag1.principal_map.items() + dag2.principal_map.items())
